@@ -27,7 +27,7 @@ import (
 )
 
 func main() {
-    const ethAddress = "<eth address>"
+	const ethAddress = "<eth address>"
 	client, err := dydx.NewClient(
 		dydx.NewStarkKey(
 			ethAddress,
@@ -128,7 +128,7 @@ func GetOrPanic[T any](input T, err error) T {
 }
 
 func main() {
-    const ethAddress = "<eth address>"
+	const ethAddress = "<eth address>"
 	client, err := dydx.NewClient(
 		dydx.NewStarkKey(
 			ethAddress,
