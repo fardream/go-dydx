@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/fardream/go-dydx"
-	"github.com/foonetic/dydxgo/util"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,7 @@ type sendCmd struct {
 	limitfee   string
 	postonly   bool
 	positionId int64
+	outputFile string
 }
 
 func newSendCmd() *sendCmd {
@@ -36,7 +38,7 @@ func newSendCmd() *sendCmd {
 			Long:  "send an order to dydx.exchange",
 		},
 		commonFields: commonFields{},
-		duration:     duration(time.Second * 60),
+		duration:     duration(time.Minute * 15),
 	}
 
 	c.setupCommonFields(c.Command)
@@ -57,6 +59,8 @@ func newSendCmd() *sendCmd {
 	c.Flags().BoolVar(&c.postonly, "post-only", false, "post only")
 	c.Flags().Int64Var(&c.positionId, "position-id", 0, "position id")
 	c.MarkFlagRequired("position-id")
+	c.Flags().StringVarP(&c.outputFile, "output", "o", "", "output result to this file")
+	c.MarkFlagFilename("output")
 	c.Run = c.do
 
 	return c
@@ -77,7 +81,12 @@ func (c *sendCmd) do(*cobra.Command, []string) {
 
 	expiration := dydx.GetIsoDateStr(now.Add((time.Duration)(c.duration)))
 
-	order := dydx.NewCreateOrderRequest(c.market, c.side, c.orderType, fmt.Sprintf("%f", c.size), fmt.Sprintf("%f", c.size), c.clientId, c.tif, expiration, c.limitfee, c.postonly)
+	order := dydx.NewCreateOrderRequest(c.market, c.side, c.orderType, fmt.Sprintf("%f", c.size), fmt.Sprintf("%f", c.price), c.clientId, c.tif, expiration, c.limitfee, c.postonly)
 
-	printOrPanic(util.GetOrPanic(client.NewOrder(ctx, order, c.positionId)).Order)
+	printOrPanic(order)
+	result := getOrPanic(client.NewOrder(ctx, order, c.positionId)).Order
+	printOrPanic(result)
+	if c.outputFile != "" {
+		os.WriteFile(c.outputFile, getOrPanic(json.MarshalIndent(result, "", "  ")), 0o666)
+	}
 }

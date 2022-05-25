@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/yanue/starkex"
+	"github.com/fardream/go-dydx/starkex"
 )
 
 // CreateOrderRequest is the post payload to create a new order

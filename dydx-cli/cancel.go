@@ -47,6 +47,6 @@ func (c *cancelCmd) do(*cobra.Command, []string) {
 	case c.orderId != "":
 		printOrPanic(getOrPanic(client.CancelOrder(ctx, c.orderId)).CancelOrder)
 	default:
-		orPanic(fmt.Errorf("missing market, or client id, or order id"))
+		orPanic(fmt.Errorf("missing client id, order id, or cancel all"))
 	}
 }
