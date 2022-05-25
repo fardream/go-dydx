@@ -5,21 +5,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/shopspring/decimal"
 )
 
 type OrderBookOrder struct {
-	Price  string
-	Size   string
-	Offset string
+	Price  decimal.Decimal `json:"price"`
+	Size   decimal.Decimal `json:"size"`
+	Offset *int64          `json:"offset,omitempty"`
 }
 
 // UnmarshalJSON parse the content into an orderbook order.
 // Right now the process first tries to parse the data with []string,
 // if that failed, parse it with map[string]string
 func (p *OrderBookOrder) UnmarshalJSON(data []byte) error {
-	var s []string
+	var s []decimal.Decimal
 	if err := json.Unmarshal(data, &s); err != nil {
-		mapper := make(map[string]string)
+		mapper := make(map[string]decimal.Decimal)
 		if err1 := json.Unmarshal(data, &mapper); err1 != nil {
 			return fmt.Errorf("failed to parse the data: as []string: %#v, and as map[string]string: %#v", err, err1)
 		}
@@ -33,7 +35,8 @@ func (p *OrderBookOrder) UnmarshalJSON(data []byte) error {
 		}
 		v, ok = mapper["offset"]
 		if ok {
-			p.Offset = v
+			k := v.IntPart()
+			p.Offset = &k
 		}
 	}
 
@@ -45,7 +48,8 @@ func (p *OrderBookOrder) UnmarshalJSON(data []byte) error {
 	case 3:
 		p.Price = s[0]
 		p.Size = s[1]
-		p.Offset = s[2]
+		k := s[2].IntPart()
+		p.Offset = &k
 	}
 
 	return nil
@@ -53,7 +57,7 @@ func (p *OrderBookOrder) UnmarshalJSON(data []byte) error {
 
 // OrderbookResponse is from https://docs.dydx.exchange/?json#get-orderbook
 type OrderbookResponse struct {
-	Offset string           `json:"offset"`
+	Offset *int64           `json:"offset,string,omitempty"`
 	Bids   []OrderBookOrder `json:"bids"`
 	Asks   []OrderBookOrder `json:"asks"`
 }

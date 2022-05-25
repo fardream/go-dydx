@@ -77,17 +77,17 @@ type commonFields struct {
 }
 
 func (cmn *commonFields) setupCommonFields(c *cobra.Command) {
-	c.Flags().BoolVar(&cmn.isMainnet, "mainnet", false, "turn on mainnet endpoint")
-	c.Flags().Var(&cmn.starkKey, "stark", "path to stark key")
-	c.Flags().Var(&cmn.apiKey, "api", "path to api key")
-	c.Flags().StringVar(&cmn.ethAddress, "eth-address", "", "eth address")
-	c.Flags().Var(&cmn.timeout, "time-out", "time out for all requests")
+	c.PersistentFlags().BoolVar(&cmn.isMainnet, "mainnet", false, "turn on mainnet endpoint")
+	c.PersistentFlags().Var(&cmn.starkKey, "stark", "path to stark key")
+	c.PersistentFlags().Var(&cmn.apiKey, "api", "path to api key")
+	c.PersistentFlags().StringVar(&cmn.ethAddress, "eth-address", "", "eth address")
 	cmn.timeout = duration(time.Second * 15)
-	c.MarkFlagRequired("eth-address")
-	c.MarkFlagRequired("stark")
-	c.MarkFlagRequired("api")
-	c.MarkFlagFilename("stark")
-	c.MarkFlagFilename("api")
+	c.PersistentFlags().Var(&cmn.timeout, "time-out", "time out for all requests")
+	c.MarkPersistentFlagRequired("eth-address")
+	c.MarkPersistentFlagRequired("stark")
+	c.MarkPersistentFlagRequired("api")
+	c.MarkPersistentFlagFilename("stark")
+	c.MarkPersistentFlagFilename("api")
 }
 
 type duration time.Duration

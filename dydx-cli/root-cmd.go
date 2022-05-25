@@ -11,17 +11,21 @@ func newRootCmd() *rootCmd {
 		Command: &cobra.Command{
 			Use:   "dydx-cli",
 			Short: "cli for dydx.exchange",
+			Long:  `cli for dydx.exchange`,
 		},
 	}
 
 	c.Run = c.do
 
 	send := newSendCmd()
-	c.AddCommand(send.Command)
-	getCmd := newLsOrderCmd()
-	c.AddCommand(getCmd.Command)
+	getCmd := newLsPrivateCmd()
 	cancelCmd := newCancelCmd()
-	c.AddCommand(cancelCmd.Command)
+	subCmd := newLsPublicCmd()
+	c.AddCommand(
+		send.Command,
+		getCmd.Command,
+		cancelCmd.Command,
+		subCmd.Command)
 
 	return c
 }

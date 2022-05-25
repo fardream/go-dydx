@@ -10,8 +10,6 @@ type orderbookChannelRequest struct {
 	IncludeOffsets *bool  `json:"includeOffsets,omitempty"`
 }
 
-type orderbookChannelResponseContents = OrderbookResponse
-
 func newOrderbookChannelRequest(market string) *orderbookChannelRequest {
 	r := &orderbookChannelRequest{Type: subscribeChannelRequestType, Channel: OrderbookChannel}
 	r.ID = market
@@ -20,7 +18,10 @@ func newOrderbookChannelRequest(market string) *orderbookChannelRequest {
 	return r
 }
 
-type OrderbookChannelResponse = ChannelResponse[orderbookChannelResponseContents]
+type (
+	OrderbookChannelResponseContents = OrderbookResponse
+	OrderbookChannelResponse         = ChannelResponse[OrderbookChannelResponseContents]
+)
 
 func (c *Client) SubscribeOrderbook(ctx context.Context, market string, outputChan chan<- *OrderbookChannelResponse) error {
 	return subscribeForType(ctx, c.wsUrl, newOrderbookChannelRequest(market), newUnsubscribeRequest(OrderbookChannel, market), outputChan)

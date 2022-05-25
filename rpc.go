@@ -71,10 +71,6 @@ func addParamsStr(path, param string) string {
 }
 
 func doRequest[TResponse any](ctx context.Context, c *Client, httpMethod, dydxPath string, params any, body []byte, isPublic bool) (*TResponse, error) {
-	if c.apiKey == nil {
-		return nil, fmt.Errorf("api key is uninitialized")
-	}
-
 	timeNow := GetIsoDateStr(time.Now())
 
 	paramstr, err := getParamsString(params)
@@ -95,6 +91,9 @@ func doRequest[TResponse any](ctx context.Context, c *Client, httpMethod, dydxPa
 	}
 
 	if !isPublic {
+		if c.apiKey == nil {
+			return nil, fmt.Errorf("api key is uninitialized")
+		}
 		signature := c.apiKey.Sign(path_seg, httpMethod, timeNow, body)
 		req.Header.Add("DYDX-SIGNATURE", signature)
 		req.Header.Add("DYDX-API-KEY", c.apiKey.Key)
