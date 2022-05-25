@@ -28,7 +28,7 @@ func newAccountChannelRequest(apiKey *ApiKey, accountNumber int) *accountChannel
 		Passphrase:    apiKey.Passphrase,
 	}
 
-	isoTimestamp := time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
+	isoTimestamp := GetIsoDateStr(time.Now())
 	r.Signature = apiKey.Sign("/ws/accounts", http.MethodGet, isoTimestamp, nil)
 	r.Timestamp = isoTimestamp
 
