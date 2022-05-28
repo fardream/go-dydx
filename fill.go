@@ -7,7 +7,7 @@ import (
 )
 
 type FillsResponse struct {
-	Fills []Fill `json:"fills"`
+	Fills []*Fill `json:"fills"`
 }
 
 type Fill struct {
@@ -23,6 +23,7 @@ type Fill struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+// FillsParam: https://docs.dydx.exchange/#get-fills
 type FillsParam struct {
 	Market            string `json:"market,omitempty"`
 	OrderId           string `json:"order_id,omitempty"`
@@ -30,6 +31,7 @@ type FillsParam struct {
 	CreatedBeforeOrAt string `json:"createdBeforeOrAt,omitempty"`
 }
 
+// GetFills implements https://docs.dydx.exchange/#get-fills
 func (c *Client) GetFills(ctx context.Context, params *FillsParam) (*FillsResponse, error) {
 	return doRequest[FillsResponse](ctx, c, http.MethodGet, "fills", params, nil, false)
 }

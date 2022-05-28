@@ -91,7 +91,7 @@ func (c *lsPrivateCmd) doAccounts(*cobra.Command, []string) {
 	} else {
 		runLoop(func(ctx context.Context, outputs chan<- *dydx.AccountChannelResponse) error {
 			return client.SubscribeAccount(ctx, 0, outputs)
-		}, time.Duration(c.sublength))
+		}, time.Duration(c.sublength), defaultLoopPrinter[dydx.AccountChannelResponseContents])
 	}
 }
 

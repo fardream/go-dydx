@@ -24,6 +24,7 @@ type ActiveOrdersResponse struct {
 	Orders []ActiveOrder `json:"orders"`
 }
 
+// GetActiveOrders implements https://docs.dydx.exchange/#cancel-active-orders
 func (c *Client) GetActiveOrders(ctx context.Context, params *QueryActiveOrdersParam) (*ActiveOrdersResponse, error) {
 	return doRequest[ActiveOrdersResponse](ctx, c, http.MethodGet, "active-orders", params, nil, false)
 }

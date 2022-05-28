@@ -3,10 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
+	"log"
 	"time"
 
 	"github.com/fardream/go-dydx"
@@ -15,11 +12,12 @@ import (
 
 type lsPublicCmd struct {
 	*cobra.Command
-	isMainnet bool
-	market    string
-	sub       bool
-	timeout   duration
-	sublength duration
+	isMainnet    bool
+	market       string
+	sub          bool
+	timeout      duration
+	sublength    duration
+	orderbookTop bool
 
 	orderbook *cobra.Command
 	markets   *cobra.Command
@@ -55,11 +53,14 @@ func newLsPublicCmd() *lsPublicCmd {
 	c.PersistentFlags().BoolVar(&c.isMainnet, "mainnet", false, "set to use the mainnet")
 	c.PersistentFlags().StringVarP(&c.market, "market", "m", "", "market to subscribe to")
 	c.PersistentFlags().BoolVar(&c.sub, "sub", false, "get the data once and quit, don't subscribe")
+
 	c.timeout = duration(time.Second * 15)
 	c.PersistentFlags().Var(&c.timeout, "time-out", "time out for all requests.")
 
 	c.sublength = duration(time.Hour * 24)
 	c.Flags().Var(&c.sublength, "subscribe-length", "how long to subscribe to")
+
+	c.orderbook.Flags().BoolVar(&c.orderbookTop, "top", false, "show order book top instead of the data")
 
 	c.orderbook.Run = c.doOrderbook
 	c.markets.Run = c.doMarkets
@@ -70,42 +71,6 @@ func newLsPublicCmd() *lsPublicCmd {
 	return c
 }
 
-func runLoop[T any](sub func(context.Context, chan<- *dydx.ChannelResponse[T]) error, length time.Duration) {
-	ctx, cancel := context.WithTimeout(context.Background(), length)
-	defer cancel()
-	var wg sync.WaitGroup
-	defer wg.Wait()
-
-	sig_chan := make(chan os.Signal, 5)
-	signal.Notify(sig_chan, syscall.SIGINT)
-
-	wg.Add(1)
-	outputs := make(chan *dydx.ChannelResponse[T])
-	go func() {
-		defer wg.Done()
-		defer close(outputs)
-		orPanic(sub(ctx, outputs))
-	}()
-
-	sigint_called := 0
-sigloop:
-	for {
-		select {
-		case <-sig_chan:
-			sigint_called++
-			cancel()
-			if sigint_called >= 5 {
-				orPanic(fmt.Errorf("sigint called 5 times, quit"))
-			}
-		case v, ok := <-outputs:
-			if !ok {
-				break sigloop
-			}
-			printOrPanic(v.Contents)
-		}
-	}
-}
-
 func (c *lsPublicCmd) doOrderbook(*cobra.Command, []string) {
 	client := getOrPanic(dydx.NewClient(nil, nil, "", c.isMainnet))
 	if !c.sub {
@@ -113,9 +78,26 @@ func (c *lsPublicCmd) doOrderbook(*cobra.Command, []string) {
 		defer cancel()
 		printOrPanic(getOrPanic(client.GetOrderbook(ctx, c.market)))
 	} else {
+		printer := defaultLoopPrinter[dydx.OrderbookChannelResponseContents]
+		if c.orderbookTop {
+			ob := dydx.NewOrderbookProcessor(c.market, true)
+			printer = func(v *dydx.OrderbookChannelResponse) {
+				ob.Process(v)
+				bid, ask := ob.BookTop()
+				bidstr := "bid : empty"
+				askstr := "empty : ask"
+				if bid != nil {
+					bidstr = fmt.Sprintf("bid : $%s %s", bid.Price.String(), bid.Size.String())
+				}
+				if ask != nil {
+					askstr = fmt.Sprintf("$%s %s : ask", ask.Price.String(), ask.Size.String())
+				}
+				log.Printf("%s || %s", bidstr, askstr)
+			}
+		}
 		runLoop(func(ctx context.Context, outputs chan<- *dydx.OrderbookChannelResponse) error {
 			return client.SubscribeOrderbook(ctx, c.market, outputs)
-		}, time.Duration(c.sublength))
+		}, time.Duration(c.sublength), printer)
 	}
 }
 
@@ -128,7 +110,7 @@ func (c *lsPublicCmd) doMarkets(*cobra.Command, []string) {
 	} else {
 		runLoop(func(ctx context.Context, outputs chan<- *dydx.MarketsChannelResponse) error {
 			return client.SubscribeMarkets(ctx, outputs)
-		}, time.Duration(c.sublength))
+		}, time.Duration(c.sublength), defaultLoopPrinter[dydx.MarketsChannelResponseContents])
 	}
 }
 
@@ -141,6 +123,6 @@ func (c *lsPublicCmd) doTrades(*cobra.Command, []string) {
 	} else {
 		runLoop(func(ctx context.Context, outputs chan<- *dydx.TradesChannelResponse) error {
 			return client.SubscribeTrades(ctx, c.market, outputs)
-		}, time.Duration(c.sublength))
+		}, time.Duration(c.sublength), defaultLoopPrinter[dydx.TradesChannelResponseContents])
 	}
 }

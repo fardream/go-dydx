@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 const (
@@ -17,24 +19,24 @@ const (
 
 // Order is the information returned from dydx
 type Order struct {
-	ID              string    `json:"id"`
-	ClientID        string    `json:"clientId"`
-	AccountID       string    `json:"accountId"`
-	Market          string    `json:"market"`
-	Side            string    `json:"side"`
-	Price           string    `json:"price"`
-	TriggerPrice    string    `json:"triggerPrice"`
-	TrailingPercent string    `json:"trailingPercent"`
-	Size            string    `json:"size"`
-	RemainingSize   string    `json:"remainingSize"`
-	Type            string    `json:"type"`
-	UnfillableAt    string    `json:"unfillableAt"`
-	Status          string    `json:"status"`
-	TimeInForce     string    `json:"timeInForce"`
-	CancelReason    string    `json:"cancelReason"`
-	PostOnly        bool      `json:"postOnly"`
-	CreatedAt       time.Time `json:"createdAt"`
-	ExpiresAt       time.Time `json:"expiresAt"`
+	ID              string           `json:"id"`
+	ClientID        string           `json:"clientId"`
+	AccountID       string           `json:"accountId"`
+	Market          string           `json:"market"`
+	Side            string           `json:"side"`
+	Price           decimal.Decimal  `json:"price"`
+	TriggerPrice    *decimal.Decimal `json:"triggerPrice,omitempty"`
+	TrailingPercent *decimal.Decimal `json:"trailingPercent,omitempty"`
+	Size            decimal.Decimal  `json:"size"`
+	RemainingSize   decimal.Decimal  `json:"remainingSize"`
+	Type            string           `json:"type"`
+	UnfillableAt    *time.Time       `json:"unfillableAt,omitempty"`
+	Status          string           `json:"status"`
+	TimeInForce     string           `json:"timeInForce"`
+	CancelReason    string           `json:"cancelReason,omitempty"`
+	PostOnly        bool             `json:"postOnly"`
+	CreatedAt       time.Time        `json:"createdAt"`
+	ExpiresAt       time.Time        `json:"expiresAt"`
 }
 
 type OrdersResponse struct {

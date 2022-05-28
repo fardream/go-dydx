@@ -1,14 +1,19 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 
-	"github.com/fardream/go-dydx"
 	"github.com/spf13/cobra"
+
+	"github.com/fardream/go-dydx"
 )
 
 type (
@@ -135,4 +140,47 @@ func orPanic(err error) {
 
 func printOrPanic(input any) {
 	fmt.Println(string(getOrPanic(json.MarshalIndent(input, "", "  "))))
+}
+
+func defaultLoopPrinter[T any](v *dydx.ChannelResponse[T]) {
+	printOrPanic(v.Contents)
+}
+
+func runLoop[T any](sub func(context.Context, chan<- *dydx.ChannelResponse[T]) error, length time.Duration, printer func(*dydx.ChannelResponse[T])) {
+	ctx, cancel := context.WithTimeout(context.Background(), length)
+	defer cancel()
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	sig_chan := make(chan os.Signal, 5)
+	signal.Notify(sig_chan, syscall.SIGINT)
+
+	wg.Add(1)
+	outputs := make(chan *dydx.ChannelResponse[T])
+	go func() {
+		defer wg.Done()
+		defer close(outputs)
+		orPanic(sub(ctx, outputs))
+	}()
+
+	sigint_called := 0
+sigloop:
+	for {
+		select {
+		case <-sig_chan:
+			sigint_called++
+			cancel()
+			if sigint_called >= 5 {
+				orPanic(fmt.Errorf("sigint called 5 times, quit"))
+			}
+		case v, ok := <-outputs:
+			if !ok {
+				break sigloop
+			}
+			if v.Contents == nil {
+				continue sigloop
+			}
+			printer(v)
+		}
+	}
 }

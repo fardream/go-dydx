@@ -27,3 +27,13 @@ func GetAccountIdFromEth(ethAddress string) string {
 func GetIsoDateStr(t time.Time) string {
 	return t.UTC().Format("2006-01-02T15:04:05.000Z")
 }
+
+func getFromMapOrDefault[TKey comparable, TValue any](amap map[TKey]*TValue, key TKey) *TValue {
+	r, ok := amap[key]
+	if !ok {
+		r = new(TValue)
+		amap[key] = r
+
+	}
+	return r
+}

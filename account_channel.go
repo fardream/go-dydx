@@ -36,15 +36,18 @@ func newAccountChannelRequest(apiKey *ApiKey, accountNumber int) *accountChannel
 }
 
 type AccountChannelResponseContents struct {
-	Orders    []Order    `json:"orders"`
-	Account   Account    `json:"account"`
-	Fills     []Fill     `json:"fills"`
-	Accounts  []Account  `json:"accounts"`
-	Transfers []Transfer `json:"transfers"`
-	Positions []Position `json:"positions"`
+	Account   *Account    `json:"account,omitempty"`
+	Orders    []*Order    `json:"orders,omitempty"`
+	Fills     []*Fill     `json:"fills,omitempty"`
+	Accounts  []*Account  `json:"accounts,omitempty"`
+	Transfers []*Transfer `json:"transfers,omitempty"`
+	Positions []*Position `json:"positions,omitempty"`
 }
+
 type AccountChannelResponse = ChannelResponse[AccountChannelResponseContents]
 
+// SubscribeAccount gets the accounts update
+// It will feed the account update in sequence into the channnel provided. It returns after the subscription is done and closed.
 func (c *Client) SubscribeAccount(ctx context.Context, accountNumber int, outputChan chan<- *AccountChannelResponse) error {
 	if c.apiKey == nil {
 		return fmt.Errorf("client doesn't have api key")
