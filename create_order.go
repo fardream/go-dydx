@@ -32,6 +32,7 @@ type CreateOrderResponse struct {
 	Order Order `json:"order"`
 }
 
+// NewCreateOrderRequest
 func NewCreateOrderRequest(market, side, order_type, size, price, clientid, tif, expiration, limitfee string, postonly bool) *CreateOrderRequest {
 	return &CreateOrderRequest{
 		Expiration:  expiration,

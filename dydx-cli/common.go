@@ -95,6 +95,10 @@ func (cmn *commonFields) setupCommonFields(c *cobra.Command) {
 	c.MarkPersistentFlagFilename("api")
 }
 
+func (c *commonFields) getDydxClient() (*dydx.Client, error) {
+	return dydx.NewClient((*dydx.StarkKey)(&c.starkKey), (*dydx.ApiKey)(&c.apiKey), c.ethAddress, c.isMainnet)
+}
+
 type duration time.Duration
 
 func (d *duration) Type() string {

@@ -25,32 +25,6 @@ const (
 )
 
 const (
-	OPEN        = "OPEN"
-	CLOSED      = "CLOSED"
-	LIQUIDATED  = "LIQUIDATED"
-	LIQUIDATION = "LIQUIDATION"
-)
-
-const (
-	OrderTypeMarket       = "MARKET"
-	OrderTypeLimit        = "LIMIT"
-	OrderTypeStop         = "STOP"
-	OrderTypeTrailingStop = "TRAILING_STOP"
-	OrderTypeTakingProfit = "TAKE_PROFIT"
-)
-
-const (
-	OrderSideBuy  = "BUY"
-	OrderSideSell = "SELL"
-)
-
-const (
-	TimeInForceGtt = "GTT" // Good til time
-	TimeInForceFok = "FOK" // Fill or Kill
-	TimeInForceIoc = "IOC" // Immediate or Cancel
-)
-
-const (
 	Resolution1D     = "1DAY"
 	Resolution4HOURS = "4HOURS"
 	Resolution1HOUR  = "1HOUR"

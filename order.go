@@ -10,6 +10,25 @@ import (
 )
 
 const (
+	OrderTypeMarket       = "MARKET"
+	OrderTypeLimit        = "LIMIT"
+	OrderTypeStop         = "STOP"
+	OrderTypeTrailingStop = "TRAILING_STOP"
+	OrderTypeTakingProfit = "TAKE_PROFIT"
+)
+
+const (
+	OrderSideBuy  = "BUY"
+	OrderSideSell = "SELL"
+)
+
+const (
+	TimeInForceGtt = "GTT" // Good til time
+	TimeInForceFok = "FOK" // Fill or Kill
+	TimeInForceIoc = "IOC" // Immediate or Cancel
+)
+
+const (
 	OrderStatusPending     = "PENDING"
 	OrderStatusOpen        = "OPEN"
 	OrderStatusFilled      = "FILLED"

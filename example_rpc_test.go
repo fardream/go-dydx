@@ -9,6 +9,8 @@ import (
 	"github.com/fardream/go-dydx"
 )
 
+var _ = "keep"
+
 // An example with subscriptions
 func Example() {
 	const ethAddress = "<eth address>"

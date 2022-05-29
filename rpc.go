@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-querystring/query"
 )
 
+// join Urls
 func urlJoin(host string, others ...string) string {
 	result := host
 	for _, v := range others {
@@ -29,6 +30,8 @@ func urlJoin(host string, others ...string) string {
 	return result
 }
 
+// DydxError represents a successful HTTP request with status code >= 400
+// This can indicates errors like failed authentication with api key or bad parameters.
 type DydxError struct {
 	HttpStatusCode int
 	Body           []byte
@@ -41,6 +44,7 @@ func (e *DydxError) Error() string {
 	return fmt.Sprintf("http failed: %d %s %s", e.HttpStatusCode, e.Message, e.Body)
 }
 
+// get the parameter string
 func getParamsString(input any) (string, error) {
 	if input == nil {
 		return "", nil
@@ -63,23 +67,24 @@ func getParamsString(input any) (string, error) {
 	}
 }
 
-func addParamsStr(path, param string) string {
-	if len(param) > 0 {
-		return fmt.Sprintf("%s?%s", path, param)
-	}
-	return path
-}
-
+// doRequest is the main function to process the request.
+// dydxPath is used in the signing of the request (when isPublic is true)
 func doRequest[TResponse any](ctx context.Context, c *Client, httpMethod, dydxPath string, params any, body []byte, isPublic bool) (*TResponse, error) {
-	timeNow := GetIsoDateStr(time.Now())
-
+	// get parameter string
 	paramstr, err := getParamsString(params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get parameter string %#v: %w", params, err)
 	}
-	path_seg := addParamsStr(fmt.Sprintf("/v3/%s", dydxPath), paramstr)
+
+	// the get dydx path
+	path_seg := fmt.Sprintf("/v3/%s", dydxPath)
+	if len(paramstr) > 0 {
+		path_seg = fmt.Sprintf("%s?%s", path_seg, paramstr)
+	}
+
 	fullpath := urlJoin(c.rpcUrl, path_seg)
 
+	// setup timeout
 	timeout_ctx, cancel := context.WithTimeout(ctx, c.timeOut)
 	defer cancel()
 
@@ -90,10 +95,13 @@ func doRequest[TResponse any](ctx context.Context, c *Client, httpMethod, dydxPa
 		return nil, err
 	}
 
+	// for private, set the authentication headers
 	if !isPublic {
 		if c.apiKey == nil {
 			return nil, fmt.Errorf("api key is uninitialized")
 		}
+		// timeNow
+		timeNow := GetIsoDateStr(time.Now())
 		signature := c.apiKey.Sign(path_seg, httpMethod, timeNow, body)
 		req.Header.Add("DYDX-SIGNATURE", signature)
 		req.Header.Add("DYDX-API-KEY", c.apiKey.Key)
@@ -101,6 +109,7 @@ func doRequest[TResponse any](ctx context.Context, c *Client, httpMethod, dydxPa
 		req.Header.Add("DYDX-PASSPHRASE", c.apiKey.Passphrase)
 	}
 
+	// set the content to json
 	if len(body) > 0 {
 		req.Header.Add("Content-Type", "application/json")
 	}
@@ -120,12 +129,12 @@ func doRequest[TResponse any](ctx context.Context, c *Client, httpMethod, dydxPa
 		return nil, &DydxError{HttpStatusCode: resp.StatusCode, Message: resp.Status, Body: msg}
 	}
 
-	log.Debugf("msg: %s", msg)
+	log.Debugf("response from remote: %s", msg)
 
 	r := new(TResponse)
 
 	if err := json.Unmarshal(msg, r); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal json: %w", err)
 	}
 
 	return r, nil

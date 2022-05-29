@@ -10,13 +10,14 @@ import (
 	"github.com/fardream/go-dydx"
 )
 
-func GetOrPanic[T any](input T, err error) T {
+func getOrPanic[T any](input T, err error) T {
 	if err != nil {
 		panic(err)
 	}
 	return input
 }
 
+// Place a new order for BTC at the price of 35000
 func ExampleClient_NewOrder() {
 	const ethAddress = "<eth address>"
 	client, err := dydx.NewClient(
@@ -46,12 +47,12 @@ func ExampleClient_NewOrder() {
 	// create a new order
 	order := dydx.NewCreateOrderRequest("BTC-USD", dydx.OrderSideSell, dydx.OrderTypeLimit, "0.001", "35000", id.String(), "", expiration, "0.125", false)
 	// place the order
-	r := GetOrPanic(client.NewOrder(context.Background(), order, 62681))
+	r := getOrPanic(client.NewOrder(context.Background(), order, 62681))
 	spew.Dump(r)
 	time.Sleep(5 * time.Second)
 
 	// get the order
-	spew.Dump(GetOrPanic(
+	spew.Dump(getOrPanic(
 		client.GetOrderById(context.Background(), r.Order.ID)).Order)
 	time.Sleep(2 * time.Second)
 
@@ -60,9 +61,9 @@ func ExampleClient_NewOrder() {
 	time.Sleep(2 * time.Second)
 
 	// get your positions
-	spew.Dump(GetOrPanic(client.GetPositions(context.Background(), &dydx.PositionParams{Market: "BTC-USD"})))
+	spew.Dump(getOrPanic(client.GetPositions(context.Background(), &dydx.PositionParams{Market: "BTC-USD"})))
 	time.Sleep(2 * time.Second)
 
 	// get the active orders
-	spew.Dump(GetOrPanic(client.GetActiveOrders(context.Background(), &dydx.QueryActiveOrdersParam{Market: "BTC-USD"})))
+	spew.Dump(getOrPanic(client.GetActiveOrders(context.Background(), &dydx.QueryActiveOrdersParam{Market: "BTC-USD"})))
 }

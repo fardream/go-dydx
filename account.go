@@ -31,12 +31,12 @@ type AccountsResponse struct {
 	Accounts []Account `json:"accounts"`
 }
 
-// GetAccounts
+// GetAccounts implements https://docs.dydx.exchange/#get-accounts, it gets all accounts
 func (c *Client) GetAccounts(ctx context.Context) (*AccountsResponse, error) {
 	return doRequest[AccountsResponse](ctx, c, http.MethodGet, "accounts", "", nil, false)
 }
 
-// GetAccount with a specific id.
+// GetAccount with a specific id, implements https://docs.dydx.exchange/#get-account
 func (c *Client) GetAccount(ctx context.Context, id string) (*AccountResponse, error) {
 	path := fmt.Sprintf("accounts/%s", id)
 	return doRequest[AccountResponse](ctx, c, http.MethodGet, path, "", nil, false)

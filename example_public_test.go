@@ -8,6 +8,8 @@ import (
 	"github.com/fardream/go-dydx"
 )
 
+var _ = "keep"
+
 // Get the orderbook for BTC-USD
 func ExampleClient_GetOrderbook() {
 	// No private key necesary
@@ -16,5 +18,5 @@ func ExampleClient_GetOrderbook() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	spew.Dump(client.GetOrderbook(ctx, "BTC-USD"))
+	spew.Dump(getOrPanic(client.GetOrderbook(ctx, "BTC-USD")))
 }

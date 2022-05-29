@@ -10,7 +10,7 @@ import (
 
 type lsPrivateCmd struct {
 	*cobra.Command
-	commonFields
+	*commonFields
 	market string
 
 	orderIds // for orders
@@ -30,7 +30,7 @@ func newLsPrivateCmd() *lsPrivateCmd {
 			Use:   "ls",
 			Short: "list private information/subscribe to accounts",
 		},
-		commonFields: commonFields{},
+		commonFields: &commonFields{},
 
 		orders: &cobra.Command{
 			Use:   "orders",
@@ -69,7 +69,7 @@ func newLsPrivateCmd() *lsPrivateCmd {
 }
 
 func (c *lsPrivateCmd) doOrders(*cobra.Command, []string) {
-	client := getOrPanic(dydx.NewClient((*dydx.StarkKey)(&c.starkKey), (*dydx.ApiKey)(&c.apiKey), c.ethAddress, c.isMainnet))
+	client := getOrPanic(c.getDydxClient())
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.timeout))
 	defer cancel()
 	switch {
@@ -83,7 +83,7 @@ func (c *lsPrivateCmd) doOrders(*cobra.Command, []string) {
 }
 
 func (c *lsPrivateCmd) doAccounts(*cobra.Command, []string) {
-	client := getOrPanic(dydx.NewClient((*dydx.StarkKey)(&c.starkKey), (*dydx.ApiKey)(&c.apiKey), c.ethAddress, c.isMainnet))
+	client := getOrPanic(c.getDydxClient())
 	if !c.subaccount {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.timeout))
 		defer cancel()
@@ -96,7 +96,7 @@ func (c *lsPrivateCmd) doAccounts(*cobra.Command, []string) {
 }
 
 func (c *lsPrivateCmd) doPositions(*cobra.Command, []string) {
-	client := getOrPanic(dydx.NewClient((*dydx.StarkKey)(&c.starkKey), (*dydx.ApiKey)(&c.apiKey), c.ethAddress, c.isMainnet))
+	client := getOrPanic(c.getDydxClient())
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.timeout))
 	defer cancel()
 
@@ -104,7 +104,7 @@ func (c *lsPrivateCmd) doPositions(*cobra.Command, []string) {
 }
 
 func (c *lsPrivateCmd) doFills(*cobra.Command, []string) {
-	client := getOrPanic(dydx.NewClient((*dydx.StarkKey)(&c.starkKey), (*dydx.ApiKey)(&c.apiKey), c.ethAddress, c.isMainnet))
+	client := getOrPanic(c.getDydxClient())
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.timeout))
 	defer cancel()
 	printOrPanic(getOrPanic(client.GetFills(ctx, &dydx.FillsParam{Market: c.market})).Fills)

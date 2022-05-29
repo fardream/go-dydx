@@ -21,11 +21,13 @@ func newRootCmd() *rootCmd {
 	getCmd := newLsPrivateCmd()
 	cancelCmd := newCancelCmd()
 	subCmd := newLsPublicCmd()
+	testnetokenCmd := newTestnetTokenCmd()
 	c.AddCommand(
 		send.Command,
 		getCmd.Command,
 		cancelCmd.Command,
-		subCmd.Command)
+		subCmd.Command,
+		testnetokenCmd.Command)
 
 	return c
 }
