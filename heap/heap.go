@@ -120,3 +120,26 @@ func down[H Interface[T], T any](h H, i0, n int) bool {
 	}
 	return i > i0
 }
+
+// IsHeap checks if the input is a properly heap-ified.
+func IsHeap[H Interface[T], T any](h H) bool {
+loop:
+	for i := 0; i < h.Len(); i++ {
+		lc := i*2 + 1
+		if lc >= h.Len() || lc < 0 {
+			break loop
+		}
+		if !h.Less(i, lc) {
+			return false
+		}
+		rc := i*2 + 2
+		if rc >= h.Len() || rc < 0 {
+			break loop
+		}
+		if !h.Less(i, rc) {
+			return false
+		}
+	}
+
+	return true
+}

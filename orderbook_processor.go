@@ -17,8 +17,8 @@ import (
 type OrderbookProcessor struct {
 	Market string
 
-	Bids bids
-	Asks asks
+	Bids
+	Asks
 
 	dropData bool
 
@@ -32,8 +32,8 @@ func NewOrderbookProcessor(market string, dropData bool) *OrderbookProcessor {
 	return &OrderbookProcessor{
 		Market:   market,
 		dropData: dropData,
-		Bids:     bids{mappedBook: mappedBook{locations: make(map[string]int)}},
-		Asks:     asks{mappedBook: mappedBook{locations: make(map[string]int)}},
+		Bids:     Bids{mappedBook: mappedBook{locations: make(map[string]int)}},
+		Asks:     Asks{mappedBook: mappedBook{locations: make(map[string]int)}},
 	}
 }
 
@@ -112,23 +112,23 @@ type singleSideOrderbook interface {
 }
 
 var (
-	_ singleSideOrderbook = (*bids)(nil)
-	_ singleSideOrderbook = (*asks)(nil)
+	_ singleSideOrderbook = (*Bids)(nil)
+	_ singleSideOrderbook = (*Asks)(nil)
 )
 
-type bids struct {
+type Bids struct {
 	mappedBook
 }
 
-func (b *bids) Less(i, j int) bool {
+func (b *Bids) Less(i, j int) bool {
 	return b.orders[i].Price.GreaterThan(b.orders[j].Price)
 }
 
-type asks struct {
+type Asks struct {
 	mappedBook
 }
 
-func (a *asks) Less(i, j int) bool {
+func (a *Asks) Less(i, j int) bool {
 	return a.orders[i].Price.LessThan(a.orders[j].Price)
 }
 

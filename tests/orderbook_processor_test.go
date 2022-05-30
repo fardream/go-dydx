@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/fardream/go-dydx"
+	"github.com/fardream/go-dydx/heap"
 )
 
 //go:embed orderbook.json
@@ -19,7 +20,11 @@ func TestOrderBookProcessor(t *testing.T) {
 	}
 	for _, a := range data {
 		ob.Process(a)
-		bid, ask := ob.BookTop()
-		t.Logf("%#v :: %#v", bid, ask)
+		if !heap.IsHeap[*dydx.Bids, *dydx.OrderbookOrder](&ob.Bids) {
+			t.Fatalf("bids not heap: %s\n", ob.Bids.PrintBook())
+		}
+		if !heap.IsHeap[*dydx.Asks, *dydx.OrderbookOrder](&ob.Asks) {
+			t.Fatalf("asks not heap: %s\n", ob.Bids.PrintBook())
+		}
 	}
 }

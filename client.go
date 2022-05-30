@@ -6,19 +6,7 @@ import (
 
 type clientOption func(c *Client)
 
-func SetApiKey(apiKey *ApiKey) clientOption {
-	return func(c *Client) {
-		c.apiKey = apiKey
-	}
-}
-
-func SetStarkKey(starkKey *StarkKey) clientOption {
-	return func(c *Client) {
-		c.starkKey = starkKey
-	}
-}
-
-func SetEndpoint(isMainnet bool) clientOption {
+func SetClientEndpoint(isMainnet bool) clientOption {
 	rpc := ApiHostRopsten
 	ws := WsHostRopsten
 	networkId := NetworkIdRopsten
@@ -35,12 +23,13 @@ func SetEndpoint(isMainnet bool) clientOption {
 	}
 }
 
-func SetTimeout(timeout time.Duration) clientOption {
+func SetClientTimeout(timeout time.Duration) clientOption {
 	return func(c *Client) {
 		c.timeOut = timeout
 	}
 }
 
+// Client is a struct holding the information necessary to connect to dydx.
 type Client struct {
 	starkKey   *StarkKey
 	apiKey     *ApiKey
@@ -53,10 +42,12 @@ type Client struct {
 	timeOut time.Duration
 }
 
+// NewClient creates a new Client, but doesn't connect to the dydx.exchange yet.
+// If only public method is needed, keys and eth addersse can be empty/nil.
 func NewClient(starkKey *StarkKey, apiKey *ApiKey, ethAddress string, isMainnet bool, clientOptions ...clientOption) (*Client, error) {
 	c := &Client{starkKey: starkKey, apiKey: apiKey, ethAddress: ethAddress, timeOut: time.Second * 15}
 
-	SetEndpoint(isMainnet)(c)
+	SetClientEndpoint(isMainnet)(c)
 
 	for _, option := range clientOptions {
 		option(c)
