@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/fardream/go-dydx"
@@ -18,6 +20,7 @@ type lsPublicCmd struct {
 	timeout      duration
 	sublength    duration
 	orderbookTop bool
+	outputFile   string
 
 	orderbook *cobra.Command
 	markets   *cobra.Command
@@ -61,6 +64,8 @@ func newLsPublicCmd() *lsPublicCmd {
 	c.Flags().Var(&c.sublength, "subscribe-length", "how long to subscribe to")
 
 	c.orderbook.Flags().BoolVar(&c.orderbookTop, "top", false, "show order book top instead of the data")
+	c.orderbook.Flags().StringVarP(&c.outputFile, "out", "o", "", "dump messages into a directory")
+	c.orderbook.MarkFlagFilename("out", "json")
 
 	c.orderbook.Run = c.doOrderbook
 	c.markets.Run = c.doMarkets
@@ -79,8 +84,9 @@ func (c *lsPublicCmd) doOrderbook(*cobra.Command, []string) {
 		printOrPanic(getOrPanic(client.GetOrderbook(ctx, c.market)))
 	} else {
 		printer := defaultLoopPrinter[dydx.OrderbookChannelResponseContents]
+		var ob *dydx.OrderbookProcessor
 		if c.orderbookTop {
-			ob := dydx.NewOrderbookProcessor(c.market, true)
+			ob = dydx.NewOrderbookProcessor(c.market, false)
 			printer = func(v *dydx.OrderbookChannelResponse) {
 				ob.Process(v)
 				bid, ask := ob.BookTop()
@@ -98,6 +104,9 @@ func (c *lsPublicCmd) doOrderbook(*cobra.Command, []string) {
 		runLoop(func(ctx context.Context, outputs chan<- *dydx.OrderbookChannelResponse) error {
 			return client.SubscribeOrderbook(ctx, c.market, outputs)
 		}, time.Duration(c.sublength), printer)
+		if ob != nil && c.outputFile != "" {
+			os.WriteFile(c.outputFile, getOrPanic(json.Marshal(ob.Data)), 0o666)
+		}
 	}
 }
 

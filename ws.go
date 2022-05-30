@@ -16,6 +16,7 @@ type ChannelResponseHeader struct {
 	Channel      string `json:"channel"`
 	ConnectionID string `json:"connection_id,omitempty"`
 	MessageID    int    `json:"message_id,omitempty"`
+	Message      string `json:"message,omitempty"`
 	Id           string `json:"id,omitempty"`
 }
 
@@ -25,8 +26,6 @@ type ChannelResponse[TContents any] struct {
 }
 
 const (
-	UndefinedChannel = "undefined"
-	ErrorChannel     = "error"
 	AccountChannel   = "v3_accounts"
 	MarketsChannel   = "v3_markets"
 	OrderbookChannel = "v3_orderbook"
@@ -38,6 +37,8 @@ const (
 	unsubscribeChannelRequestType = "unsubscribe"
 	subscribeConfirmationType     = "subscribed"
 	unsubscribeConfirmationType   = "unsubscribed" // unused
+	channelErrorType              = "error"
+	channelConnectedType          = "connected"
 )
 
 // loopRead reads the data from the connection
@@ -77,12 +78,15 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 	var wg sync.WaitGroup
 	defer wg.Wait()
 
+	inner_ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	// dial and create the connection.
 	dialer := &websocket.Dialer{
 		Proxy:            http.ProxyFromEnvironment,
 		HandshakeTimeout: 60 * time.Second,
 	}
-	conn, rsp, err := dialer.DialContext(ctx, url, nil)
+	conn, rsp, err := dialer.DialContext(inner_ctx, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to connect to websocket %s: %w\nresponse is %#v", url, err, rsp)
 	}
@@ -97,8 +101,12 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 		defer close(msg_chan)
 		defer close(err_chan)
 
-		err_chan <- loopRead(ctx, conn, msg_chan)
+		err_chan <- loopRead(inner_ctx, conn, msg_chan)
 	}()
+
+	b, _ := json.Marshal(subscribe)
+	log.Debugf("subscribe with: %s", string(b))
+
 	if err = conn.WriteJSON(subscribe); err != nil {
 		return fmt.Errorf("failed to write subscribe request %#v: %w", subscribe, err)
 	}
@@ -106,7 +114,7 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 mainloop:
 	for {
 		select {
-		case <-ctx.Done():
+		case <-inner_ctx.Done():
 			break mainloop
 		case msg, ok := <-msg_chan:
 			if !ok {
@@ -121,11 +129,18 @@ mainloop:
 			}
 			if resp.Type == subscribeConfirmationType {
 				unsubscribe.Id = resp.Id
+			} else if resp.Type == channelErrorType {
+				return fmt.Errorf("subscription error: %s", resp.Message)
 			}
 			select {
-			case <-ctx.Done():
+			case <-inner_ctx.Done():
 				break mainloop
 			case output <- resp:
+			}
+		case err = <-err_chan:
+			if err != nil {
+				log.Warnf("err received from read loop, quit: %#v", err)
+				return err
 			}
 		}
 	}

@@ -1,6 +1,9 @@
 package dydx
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/shopspring/decimal"
 
 	"github.com/fardream/go-dydx/heap"
@@ -14,12 +17,12 @@ import (
 type OrderbookProcessor struct {
 	Market string
 
-	bids
-	asks
+	Bids bids
+	Asks asks
 
 	dropData bool
 
-	data   []*OrderbookChannelResponse
+	Data   []*OrderbookChannelResponse
 	offset int64
 }
 
@@ -29,15 +32,15 @@ func NewOrderbookProcessor(market string, dropData bool) *OrderbookProcessor {
 	return &OrderbookProcessor{
 		Market:   market,
 		dropData: dropData,
-		bids:     bids{mappedBook: mappedBook{locations: make(map[string]int)}},
-		asks:     asks{mappedBook: mappedBook{locations: make(map[string]int)}},
+		Bids:     bids{mappedBook: mappedBook{locations: make(map[string]int)}},
+		Asks:     asks{mappedBook: mappedBook{locations: make(map[string]int)}},
 	}
 }
 
 // Process a update from the orderbook
 func (ob *OrderbookProcessor) Process(resp *OrderbookChannelResponse) {
 	if !ob.dropData {
-		ob.data = append(ob.data, resp)
+		ob.Data = append(ob.Data, resp)
 	}
 
 	contents := resp.Contents
@@ -46,14 +49,14 @@ func (ob *OrderbookProcessor) Process(resp *OrderbookChannelResponse) {
 	}
 
 	if contents.Offset != nil {
-		if (*contents.Offset) <= ob.offset {
+		if (*contents.Offset) < ob.offset {
 			return
 		}
 		ob.offset = *contents.Offset
 	}
 
-	ob.updateBook(contents.Bids, &ob.bids)
-	ob.updateBook(contents.Asks, &ob.asks)
+	ob.updateBook(contents.Bids, &ob.Bids)
+	ob.updateBook(contents.Asks, &ob.Asks)
 }
 
 // updateBook updates one side of the book (bids or asks)
@@ -89,12 +92,12 @@ func updatePriceLevel[T singleSideOrderbook](ob T, order *OrderbookOrder) {
 // BookTop returns the best bid and ask of the book. nil if the side of the book is empty.
 func (ob *OrderbookProcessor) BookTop() (*OrderbookOrder, *OrderbookOrder) {
 	var bid *OrderbookOrder
-	if len(ob.bids.orders) > 0 {
-		bid = ob.bids.orders[0]
+	if len(ob.Bids.orders) > 0 {
+		bid = ob.Bids.orders[0]
 	}
 	var ask *OrderbookOrder
-	if len(ob.asks.orders) > 0 {
-		ask = ob.asks.orders[0]
+	if len(ob.Asks.orders) > 0 {
+		ask = ob.Asks.orders[0]
 	}
 	return bid, ask
 }
@@ -149,6 +152,7 @@ func (m *mappedBook) Pop() *OrderbookOrder {
 		return nil
 	}
 	order := m.orders[len(m.orders)-1]
+	m.orders = m.orders[0 : len(m.orders)-1]
 	delete(m.locations, order.PriceString)
 
 	return order
@@ -169,4 +173,12 @@ func (m *mappedBook) updatePriceLevelSize(pricestr string, news_size decimal.Dec
 	if ok {
 		m.orders[r].Size = news_size
 	}
+}
+
+func (m *mappedBook) PrintBook() string {
+	var b strings.Builder
+	for index, v := range m.orders {
+		fmt.Fprintf(&b, "%d : %s @ $%s\n", index, v.Price.String(), v.Size.String())
+	}
+	return b.String()
 }

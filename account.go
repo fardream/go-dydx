@@ -22,7 +22,7 @@ type Account struct {
 	QuoteBalance       decimal.Decimal     `json:"quoteBalance"`
 	PendingDeposits    string              `json:"pendingDeposits"`
 	PendingWithdrawals string              `json:"pendingWithdrawals"`
-	AccountNumber      string              `json:"accountNumber"`
+	AccountNumber      AccountNumber       `json:"accountNumber"`
 	OpenPositions      map[string]Position `json:"openPositions,omitempty"`
 	CreatedAt          time.Time           `json:"createdAt"`
 }
