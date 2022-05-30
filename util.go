@@ -1,6 +1,8 @@
 package dydx
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -36,4 +38,45 @@ func getFromMapOrDefault[TKey comparable, TValue any](amap map[TKey]*TValue, key
 
 	}
 	return r
+}
+
+func isStringValid(v string, validValues []string) (bool, int) {
+	upper := strings.ToUpper(v)
+	for i, t := range validValues {
+		if upper == t {
+			return true, i
+		}
+	}
+
+	return false, 0
+}
+
+func unmarshalJsonForStringEnum[T ~string](input []byte, typename string, ot *T, validValues []string) error {
+	var s string
+	if err := json.Unmarshal(input, &s); err != nil {
+		return err
+	}
+	if ok, index := isStringValid(s, validValues); !ok {
+		return fmt.Errorf("%s is not a valid %s", s, typename)
+	} else {
+		*ot = (T)(validValues[index])
+		return nil
+	}
+}
+
+func marshalJsonForStringEnum[T ~string](ot T, typename string, validValues []string) ([]byte, error) {
+	if ok, index := isStringValid(string(ot), validValues); !ok {
+		return nil, fmt.Errorf("%s is not a valid OrderType", ot)
+	} else {
+		s := string(validValues[index])
+		return json.Marshal(s)
+	}
+}
+
+func getProperStringEnum[T ~string](input string, validTypes []string, typename string) (T, error) {
+	ok, index := isStringValid(input, validTypes)
+	if !ok {
+		return T(""), fmt.Errorf("invalid %s %s", typename, input)
+	}
+	return T(validTypes[index]), nil
 }

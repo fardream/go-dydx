@@ -4,12 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
-	"fmt"
 	"math/big"
 	"os"
 	"time"
 
 	"github.com/fardream/go-dydx"
+	"github.com/shopspring/decimal"
 	"github.com/spf13/cobra"
 )
 
@@ -17,14 +17,14 @@ type sendCmd struct {
 	*cobra.Command
 	commonFields
 	duration
-	size       float64
+	size       decimalValue
 	orderType  string
-	price      float64
+	price      decimalValue
 	clientId   string
 	market     string
 	side       string
 	tif        string
-	limitfee   string
+	limitfee   decimalValue
 	postonly   bool
 	positionId int64
 	outputFile string
@@ -44,15 +44,16 @@ func newSendCmd() *sendCmd {
 	c.setupCommonFields(c.Command)
 
 	c.Flags().VarP(&c.duration, "duration", "t", "order duration")
-	c.Flags().Float64VarP(&c.size, "size", "s", 0, "order size")
+	c.Flags().VarP(&c.size, "size", "s", "order size")
 	c.MarkFlagRequired("size")
-	c.Flags().Float64VarP(&c.price, "price", "p", 0, "price for the order")
+	c.Flags().VarP(&c.price, "price", "p", "price for the order")
 	c.MarkFlagRequired("price")
 	c.Flags().StringVar(&c.orderType, "order-type", "MARKET", "order type")
 	c.Flags().StringVar(&c.clientId, "client-id", "", "set an optional client order id. if unset, will be automatically generated")
 	c.Flags().StringVar(&c.market, "market", "m", "market for this order")
 	c.MarkFlagRequired("market")
-	c.Flags().StringVar(&c.limitfee, "limit-fee", "0.1", "limit fee for this order")
+	c.limitfee.Set("0.125")
+	c.Flags().Var(&c.limitfee, "limit-fee", "limit fee for this order")
 	c.Flags().StringVar(&c.side, "side", "", "side")
 	c.MarkFlagRequired("side")
 	c.Flags().StringVar(&c.tif, "tif", "GTT", "time-in-force")
@@ -79,9 +80,16 @@ func (c *sendCmd) do(*cobra.Command, []string) {
 		c.clientId = date_yyyymmdd.Mul(date_yyyymmdd, million).Add(date_yyyymmdd, id).String()
 	}
 
-	expiration := dydx.GetIsoDateStr(now.Add((time.Duration)(c.duration)))
-
-	order := dydx.NewCreateOrderRequest(c.market, c.side, c.orderType, fmt.Sprintf("%f", c.size), fmt.Sprintf("%f", c.price), c.clientId, c.tif, expiration, c.limitfee, c.postonly)
+	order := dydx.NewCreateOrderRequest(
+		c.market,
+		getOrPanic(dydx.GetOrderSide(c.side)),
+		getOrPanic(dydx.GetOrderType(c.orderType)),
+		decimal.Decimal(c.size),
+		decimal.Decimal(c.price),
+		c.clientId, getOrPanic(dydx.GetTimeInForce(c.tif)),
+		now.Add((time.Duration)(c.duration)),
+		decimal.Decimal(c.limitfee),
+		c.postonly)
 
 	printOrPanic(order)
 	result := getOrPanic(client.NewOrder(ctx, order, c.positionId)).Order

@@ -5,27 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/fardream/go-dydx/starkex"
+	"github.com/shopspring/decimal"
 )
 
 // CreateOrderRequest is the post payload to create a new order
 // https://docs.dydx.exchange/?json#create-a-new-order
 type CreateOrderRequest struct {
-	Signature       string `json:"signature"`
-	Expiration      string `json:"expiration"`
-	Market          string `json:"market"`
-	Side            string `json:"side"`
-	Type            string `json:"type"`
-	Size            string `json:"size"`
-	Price           string `json:"price"`
-	ClientId        string `json:"clientId"`
-	TimeInForce     string `json:"timeInForce"`
-	LimitFee        string `json:"limitFee"`
-	CancelId        string `json:"cancelId,omitempty"`
-	TriggerPrice    string `json:"triggerPrice,omitempty"`
-	TrailingPercent string `json:"trailingPercent,omitempty"`
-	PostOnly        bool   `json:"postOnly"`
+	Signature       string          `json:"signature"`
+	Expiration      time.Time       `json:"expiration"`
+	Market          string          `json:"market"`
+	Side            OrderSide       `json:"side"`
+	Type            OrderType       `json:"type"`
+	Size            decimal.Decimal `json:"size"`
+	Price           decimal.Decimal `json:"price,omitempty"`
+	ClientId        string          `json:"clientId"`
+	TimeInForce     TimeInForce     `json:"timeInForce"`
+	LimitFee        decimal.Decimal `json:"limitFee"`
+	CancelId        string          `json:"cancelId,omitempty"`
+	TriggerPrice    string          `json:"triggerPrice,omitempty"`
+	TrailingPercent string          `json:"trailingPercent,omitempty"`
+	PostOnly        bool            `json:"postOnly"`
 }
 
 type CreateOrderResponse struct {
@@ -33,7 +35,7 @@ type CreateOrderResponse struct {
 }
 
 // NewCreateOrderRequest
-func NewCreateOrderRequest(market, side, order_type, size, price, clientid, tif, expiration, limitfee string, postonly bool) *CreateOrderRequest {
+func NewCreateOrderRequest(market string, side OrderSide, order_type OrderType, size decimal.Decimal, price decimal.Decimal, clientid string, tif TimeInForce, expiration time.Time, limitfee decimal.Decimal, postonly bool) *CreateOrderRequest {
 	return &CreateOrderRequest{
 		Expiration:  expiration,
 		Market:      market,
@@ -64,13 +66,13 @@ func (c *Client) NewOrder(ctx context.Context, order *CreateOrderRequest, positi
 		order_sign_params := starkex.OrderSignParam{
 			NetworkId:  c.networkId,
 			Market:     order.Market,
-			Side:       order.Side,
+			Side:       string(order.Side),
 			PositionId: positionId,
-			HumanSize:  order.Size,
-			HumanPrice: order.Price,
-			LimitFee:   order.LimitFee,
+			HumanSize:  order.Size.String(),
+			HumanPrice: order.Price.String(),
+			LimitFee:   order.LimitFee.String(),
 			ClientId:   order.ClientId,
-			Expiration: order.Expiration,
+			Expiration: GetIsoDateStr(order.Expiration),
 		}
 
 		log.Debugf("sign order: %#v", order_sign_params)

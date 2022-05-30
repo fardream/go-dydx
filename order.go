@@ -9,49 +9,22 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const (
-	OrderTypeMarket       = "MARKET"
-	OrderTypeLimit        = "LIMIT"
-	OrderTypeStop         = "STOP"
-	OrderTypeTrailingStop = "TRAILING_STOP"
-	OrderTypeTakingProfit = "TAKE_PROFIT"
-)
-
-const (
-	OrderSideBuy  = "BUY"
-	OrderSideSell = "SELL"
-)
-
-const (
-	TimeInForceGtt = "GTT" // Good til time
-	TimeInForceFok = "FOK" // Fill or Kill
-	TimeInForceIoc = "IOC" // Immediate or Cancel
-)
-
-const (
-	OrderStatusPending     = "PENDING"
-	OrderStatusOpen        = "OPEN"
-	OrderStatusFilled      = "FILLED"
-	OrderStatusCanceled    = "CANCELED"
-	OrderStatusUntriggered = "UNTRIGGERED"
-)
-
 // Order is the information returned from dydx
 type Order struct {
 	ID              string           `json:"id"`
 	ClientID        string           `json:"clientId"`
 	AccountID       string           `json:"accountId"`
 	Market          string           `json:"market"`
-	Side            string           `json:"side"`
+	Side            OrderSide        `json:"side"`
 	Price           decimal.Decimal  `json:"price"`
 	TriggerPrice    *decimal.Decimal `json:"triggerPrice,omitempty"`
 	TrailingPercent *decimal.Decimal `json:"trailingPercent,omitempty"`
 	Size            decimal.Decimal  `json:"size"`
 	RemainingSize   decimal.Decimal  `json:"remainingSize"`
-	Type            string           `json:"type"`
+	Type            OrderType        `json:"type"`
 	UnfillableAt    *time.Time       `json:"unfillableAt,omitempty"`
-	Status          string           `json:"status"`
-	TimeInForce     string           `json:"timeInForce"`
+	Status          OrderStatus      `json:"status"`
+	TimeInForce     TimeInForce      `json:"timeInForce"`
 	CancelReason    string           `json:"cancelReason,omitempty"`
 	PostOnly        bool             `json:"postOnly"`
 	CreatedAt       time.Time        `json:"createdAt"`
