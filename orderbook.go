@@ -5,14 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/shopspring/decimal"
 )
 
 type OrderbookOrder struct {
-	Price  decimal.Decimal `json:"price"`
-	Size   decimal.Decimal `json:"size"`
-	Offset *int64          `json:"offset,omitempty"`
+	Price  Decimal `json:"price"`
+	Size   Decimal `json:"size"`
+	Offset *int64  `json:"offset,omitempty"`
 
 	PriceString string `json:"-"`
 }
@@ -21,9 +19,9 @@ type OrderbookOrder struct {
 // Right now the process first tries to parse the data with []string,
 // if that failed, parse it with map[string]string
 func (p *OrderbookOrder) UnmarshalJSON(data []byte) error {
-	var s []decimal.Decimal
+	var s []Decimal
 	if err := json.Unmarshal(data, &s); err != nil {
-		mapper := make(map[string]decimal.Decimal)
+		mapper := make(map[string]Decimal)
 		if err1 := json.Unmarshal(data, &mapper); err1 != nil {
 			return fmt.Errorf("failed to parse the data: as []string: %#v, and as map[string]string: %#v", err, err1)
 		}

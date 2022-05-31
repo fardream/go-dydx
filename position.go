@@ -4,8 +4,6 @@ import (
 	"context"
 	"net/http"
 	"time"
-
-	"github.com/shopspring/decimal"
 )
 
 type PositionResponse struct {
@@ -13,20 +11,20 @@ type PositionResponse struct {
 }
 
 type Position struct {
-	Market        string           `json:"market,omitempty"`
-	Status        string           `json:"status,omitempty"`
-	Side          string           `json:"side,omitempty"`
-	Size          decimal.Decimal  `json:"size,omitempty"`
-	MaxSize       decimal.Decimal  `json:"maxSize,omitempty"`
-	EntryPrice    decimal.Decimal  `json:"entryPrice,omitempty"`
-	ExitPrice     *decimal.Decimal `json:"exitPrice,omitempty"`
-	UnrealizedPnl decimal.Decimal  `json:"unrealizedPnl,omitempty"`
-	RealizedPnl   decimal.Decimal  `json:"realizedPnl,omitempty"`
-	CreatedAt     time.Time        `json:"createdAt,omitempty"`
-	ClosedAt      *time.Time       `json:"closedAt,omitempty"`
-	NetFunding    decimal.Decimal  `json:"netFunding,omitempty"`
-	SumOpen       decimal.Decimal  `json:"sumOpen,omitempty"`
-	SumClose      decimal.Decimal  `json:"sumClose,omitempty"`
+	Market        string     `json:"market,omitempty"`
+	Status        string     `json:"status,omitempty"`
+	Side          string     `json:"side,omitempty"`
+	Size          Decimal    `json:"size,omitempty"`
+	MaxSize       Decimal    `json:"maxSize,omitempty"`
+	EntryPrice    Decimal    `json:"entryPrice,omitempty"`
+	ExitPrice     *Decimal   `json:"exitPrice,omitempty"`
+	UnrealizedPnl Decimal    `json:"unrealizedPnl,omitempty"`
+	RealizedPnl   Decimal    `json:"realizedPnl,omitempty"`
+	CreatedAt     time.Time  `json:"createdAt,omitempty"`
+	ClosedAt      *time.Time `json:"closedAt,omitempty"`
+	NetFunding    Decimal    `json:"netFunding,omitempty"`
+	SumOpen       Decimal    `json:"sumOpen,omitempty"`
+	SumClose      Decimal    `json:"sumClose,omitempty"`
 }
 
 const (

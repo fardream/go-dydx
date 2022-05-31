@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/fardream/go-dydx"
-	"github.com/shopspring/decimal"
 	"github.com/spf13/cobra"
 )
 
@@ -84,11 +83,11 @@ func (c *sendCmd) do(*cobra.Command, []string) {
 		c.market,
 		getOrPanic(dydx.GetOrderSide(c.side)),
 		getOrPanic(dydx.GetOrderType(c.orderType)),
-		decimal.Decimal(c.size),
-		decimal.Decimal(c.price),
+		dydx.Decimal(c.size),
+		dydx.Decimal(c.price),
 		c.clientId, getOrPanic(dydx.GetTimeInForce(c.tif)),
 		now.Add((time.Duration)(c.duration)),
-		decimal.Decimal(c.limitfee),
+		dydx.Decimal(c.limitfee),
 		c.postonly)
 
 	printOrPanic(order)

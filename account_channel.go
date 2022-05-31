@@ -12,18 +12,18 @@ type accountChannelRequest struct {
 	Channel string `json:"channel"`
 
 	// Private
-	AccountNumber AccountNumber `json:"accountNumber"`
-	ApiKey        string        `json:"apiKey,omitempty"`
-	Signature     string        `json:"signature,omitempty"`
-	Timestamp     string        `json:"timestamp,omitempty"`
-	Passphrase    string        `json:"passphrase,omitempty"`
+	AccountNumber JsonInt `json:"accountNumber"`
+	ApiKey        string  `json:"apiKey,omitempty"`
+	Signature     string  `json:"signature,omitempty"`
+	Timestamp     string  `json:"timestamp,omitempty"`
+	Passphrase    string  `json:"passphrase,omitempty"`
 }
 
 func newAccountChannelRequest(apiKey *ApiKey, accountNumber int) *accountChannelRequest {
 	r := &accountChannelRequest{
 		Type:          "subscribe",
 		Channel:       AccountChannel,
-		AccountNumber: AccountNumber(accountNumber),
+		AccountNumber: JsonInt(accountNumber),
 		ApiKey:        apiKey.Key,
 		Passphrase:    apiKey.Passphrase,
 	}

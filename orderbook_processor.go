@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/shopspring/decimal"
-
 	"github.com/fardream/go-dydx/heap"
 )
 
@@ -108,7 +106,7 @@ type singleSideOrderbook interface {
 	// allow heap operations on this type
 	heap.Interface[*OrderbookOrder]
 	getPriceLevelIndex(pricestr string) (int, bool)
-	updatePriceLevelSize(pricestr string, news_size decimal.Decimal)
+	updatePriceLevelSize(pricestr string, news_size Decimal)
 }
 
 var (
@@ -168,7 +166,7 @@ func (m *mappedBook) getPriceLevelIndex(pricestr string) (int, bool) {
 	return r, ok
 }
 
-func (m *mappedBook) updatePriceLevelSize(pricestr string, news_size decimal.Decimal) {
+func (m *mappedBook) updatePriceLevelSize(pricestr string, news_size Decimal) {
 	r, ok := m.locations[pricestr]
 	if ok {
 		m.orders[r].Size = news_size

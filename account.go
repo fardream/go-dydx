@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/shopspring/decimal"
 )
 
 type AccountResponse struct {
@@ -17,12 +15,12 @@ type Account struct {
 	PositionId         int64               `json:"positionId,string"`
 	ID                 string              `json:"id"`
 	StarkKey           string              `json:"starkKey"`
-	Equity             decimal.Decimal     `json:"equity"`
-	FreeCollateral     decimal.Decimal     `json:"freeCollateral"`
-	QuoteBalance       decimal.Decimal     `json:"quoteBalance"`
+	Equity             Decimal             `json:"equity"`
+	FreeCollateral     Decimal             `json:"freeCollateral"`
+	QuoteBalance       Decimal             `json:"quoteBalance"`
 	PendingDeposits    string              `json:"pendingDeposits"`
 	PendingWithdrawals string              `json:"pendingWithdrawals"`
-	AccountNumber      AccountNumber       `json:"accountNumber"`
+	AccountNumber      JsonInt             `json:"accountNumber"`
 	OpenPositions      map[string]Position `json:"openPositions,omitempty"`
 	CreatedAt          time.Time           `json:"createdAt"`
 }

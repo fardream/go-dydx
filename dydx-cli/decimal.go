@@ -1,15 +1,18 @@
 package main
 
-import "github.com/shopspring/decimal"
+import (
+	"github.com/fardream/go-dydx"
+	"github.com/shopspring/decimal"
+)
 
-type decimalValue decimal.Decimal
+type decimalValue dydx.Decimal
 
 func (d *decimalValue) Type() string {
 	return "decimal.Decimal"
 }
 
 func (d *decimalValue) Set(s string) error {
-	if v, err := decimal.NewFromString(s); err != nil {
+	if v, err := dydx.NewDecimalFromString(s); err != nil {
 		return err
 	} else {
 		*d = decimalValue(v)
@@ -18,5 +21,5 @@ func (d *decimalValue) Set(s string) error {
 }
 
 func (d *decimalValue) String() string {
-	return (*decimal.Decimal)(d).String()
+	return dydx.DecimalToString((*decimal.Decimal)(d))
 }

@@ -8,26 +8,25 @@ import (
 	"time"
 
 	"github.com/fardream/go-dydx/starkex"
-	"github.com/shopspring/decimal"
 )
 
 // CreateOrderRequest is the post payload to create a new order
 // https://docs.dydx.exchange/?json#create-a-new-order
 type CreateOrderRequest struct {
-	Signature       string          `json:"signature"`
-	Expiration      time.Time       `json:"expiration"`
-	Market          string          `json:"market"`
-	Side            OrderSide       `json:"side"`
-	Type            OrderType       `json:"type"`
-	Size            decimal.Decimal `json:"size"`
-	Price           decimal.Decimal `json:"price,omitempty"`
-	ClientId        string          `json:"clientId"`
-	TimeInForce     TimeInForce     `json:"timeInForce"`
-	LimitFee        decimal.Decimal `json:"limitFee"`
-	CancelId        string          `json:"cancelId,omitempty"`
-	TriggerPrice    string          `json:"triggerPrice,omitempty"`
-	TrailingPercent string          `json:"trailingPercent,omitempty"`
-	PostOnly        bool            `json:"postOnly"`
+	Signature       string      `json:"signature"`
+	Expiration      time.Time   `json:"expiration"`
+	Market          string      `json:"market"`
+	Side            OrderSide   `json:"side"`
+	Type            OrderType   `json:"type"`
+	Size            Decimal     `json:"size"`
+	Price           Decimal     `json:"price,omitempty"`
+	ClientId        string      `json:"clientId"`
+	TimeInForce     TimeInForce `json:"timeInForce"`
+	LimitFee        Decimal     `json:"limitFee"`
+	CancelId        string      `json:"cancelId,omitempty"`
+	TriggerPrice    string      `json:"triggerPrice,omitempty"`
+	TrailingPercent string      `json:"trailingPercent,omitempty"`
+	PostOnly        bool        `json:"postOnly"`
 }
 
 type CreateOrderResponse struct {
@@ -35,7 +34,7 @@ type CreateOrderResponse struct {
 }
 
 // NewCreateOrderRequest
-func NewCreateOrderRequest(market string, side OrderSide, order_type OrderType, size decimal.Decimal, price decimal.Decimal, clientid string, tif TimeInForce, expiration time.Time, limitfee decimal.Decimal, postonly bool) *CreateOrderRequest {
+func NewCreateOrderRequest(market string, side OrderSide, order_type OrderType, size Decimal, price Decimal, clientid string, tif TimeInForce, expiration time.Time, limitfee Decimal, postonly bool) *CreateOrderRequest {
 	return &CreateOrderRequest{
 		Expiration:  expiration,
 		Market:      market,

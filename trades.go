@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/shopspring/decimal"
 )
 
 type Trade struct {
-	Side      string          `json:"side"`
-	Size      decimal.Decimal `json:"size"`
-	Price     decimal.Decimal `json:"price"`
-	CreatedAt time.Time       `json:"createdAt"`
+	Side      string    `json:"side"`
+	Size      Decimal   `json:"size"`
+	Price     Decimal   `json:"price"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 // https://docs.dydx.exchange/?json#get-trades

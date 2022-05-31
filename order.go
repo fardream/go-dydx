@@ -5,30 +5,28 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/shopspring/decimal"
 )
 
 // Order is the information returned from dydx
 type Order struct {
-	ID              string           `json:"id"`
-	ClientID        string           `json:"clientId"`
-	AccountID       string           `json:"accountId"`
-	Market          string           `json:"market"`
-	Side            OrderSide        `json:"side"`
-	Price           decimal.Decimal  `json:"price"`
-	TriggerPrice    *decimal.Decimal `json:"triggerPrice,omitempty"`
-	TrailingPercent *decimal.Decimal `json:"trailingPercent,omitempty"`
-	Size            decimal.Decimal  `json:"size"`
-	RemainingSize   decimal.Decimal  `json:"remainingSize"`
-	Type            OrderType        `json:"type"`
-	UnfillableAt    *time.Time       `json:"unfillableAt,omitempty"`
-	Status          OrderStatus      `json:"status"`
-	TimeInForce     TimeInForce      `json:"timeInForce"`
-	CancelReason    string           `json:"cancelReason,omitempty"`
-	PostOnly        bool             `json:"postOnly"`
-	CreatedAt       time.Time        `json:"createdAt"`
-	ExpiresAt       time.Time        `json:"expiresAt"`
+	ID              string      `json:"id"`
+	ClientID        string      `json:"clientId"`
+	AccountID       string      `json:"accountId"`
+	Market          string      `json:"market"`
+	Side            OrderSide   `json:"side"`
+	Price           Decimal     `json:"price"`
+	TriggerPrice    *Decimal    `json:"triggerPrice,omitempty"`
+	TrailingPercent *Decimal    `json:"trailingPercent,omitempty"`
+	Size            Decimal     `json:"size"`
+	RemainingSize   Decimal     `json:"remainingSize"`
+	Type            OrderType   `json:"type"`
+	UnfillableAt    *time.Time  `json:"unfillableAt,omitempty"`
+	Status          OrderStatus `json:"status"`
+	TimeInForce     TimeInForce `json:"timeInForce"`
+	CancelReason    string      `json:"cancelReason,omitempty"`
+	PostOnly        bool        `json:"postOnly"`
+	CreatedAt       time.Time   `json:"createdAt"`
+	ExpiresAt       time.Time   `json:"expiresAt"`
 }
 
 type OrdersResponse struct {
