@@ -42,7 +42,11 @@ func (info *AccountInfoByMarket) AddPosition(position *Position) {
 }
 
 func (info *AccountInfoByMarket) AddFill(fill *Fill) {
-	filllist := getFromMapOrDefault(info.Fills, fill.OrderID)
+	filllist, ok := info.Fills[fill.OrderID]
+	if !ok {
+		filllist = new(FillList)
+		info.Fills[fill.OrderID] = filllist
+	}
 	*filllist = append(*filllist, fill)
 }
 
@@ -73,7 +77,12 @@ func NewAccountProcessor() *AccountProcessor {
 }
 
 func (ap *AccountProcessor) getAccountInfoByMarket(market string) *AccountInfoByMarket {
-	return getFromMapOrDefault(ap.Info, market)
+	r, ok := ap.Info[market]
+	if !ok {
+		r = NewAccountInfoByMarket(market)
+	}
+
+	return r
 }
 
 // ProcessChannelResponse processes the channel responses in sequence.
@@ -82,6 +91,10 @@ func (ap *AccountProcessor) ProcessChannelResponse(resp *AccountChannelResponse)
 	ap.datas = append(ap.datas, resp)
 	// contents
 	contents := resp.Contents
+	if contents == nil {
+		return
+	}
+
 	// only update account if ap.Accont is nil
 	if ap.Account == nil {
 		if contents.Account != nil {

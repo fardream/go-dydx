@@ -6,18 +6,18 @@ import (
 )
 
 type ActiveOrder struct {
-	ID            string `json:"id"`
-	AccountID     string `json:"accountId"`
-	Market        string `json:"market"`
-	Side          string `json:"side"`
-	Price         string `json:"price"`
-	RemainingSize string `json:"remainingSize"`
+	ID            string    `json:"id"`
+	AccountID     string    `json:"accountId"`
+	Market        string    `json:"market"`
+	Side          OrderSide `json:"side"`
+	Price         Decimal   `json:"price"`
+	RemainingSize Decimal   `json:"remainingSize"`
 }
 
 type QueryActiveOrdersParam struct {
-	Market string `url:"market,omitempty"`
-	Side   string `url:"side,omitempty"`
-	Id     string `url:"id,omitempty"`
+	Market string    `url:"market,omitempty"`
+	Side   OrderSide `url:"side,omitempty"`
+	Id     string    `url:"id,omitempty"`
 }
 
 type ActiveOrdersResponse struct {
@@ -40,7 +40,7 @@ type CancelActiveOrdersResponse struct {
 }
 
 type CancelActiveOrdersParam struct {
-	Market string `url:"market,omitempty"`
-	Side   string `url:"side,omitempty"`
-	Id     string `url:"id,omitempty"`
+	Market string    `url:"market,omitempty"`
+	Side   OrderSide `url:"side,omitempty"`
+	Id     string    `url:"id,omitempty"`
 }

@@ -18,8 +18,8 @@ import (
 
 type commonFields struct {
 	isMainnet  bool
-	starkKey   starkKey
-	apiKey     apiKey
+	starkKey   dydx.StarkKey
+	apiKey     dydx.ApiKey
 	ethAddress string
 	timeout    duration
 }
@@ -29,11 +29,14 @@ func (cmn *commonFields) setupCommonFields(c *cobra.Command) {
 	c.PersistentFlags().Var(&cmn.starkKey, "stark", "path to stark key")
 	c.PersistentFlags().Var(&cmn.apiKey, "api", "path to api key")
 	c.PersistentFlags().StringVar(&cmn.ethAddress, "eth-address", "", "eth address")
+
 	cmn.timeout = duration(time.Second * 15)
 	c.PersistentFlags().Var(&cmn.timeout, "time-out", "time out for all requests")
+
 	c.MarkPersistentFlagRequired("eth-address")
 	c.MarkPersistentFlagRequired("stark")
 	c.MarkPersistentFlagRequired("api")
+
 	c.MarkPersistentFlagFilename("stark")
 	c.MarkPersistentFlagFilename("api")
 }

@@ -26,7 +26,7 @@ type Account struct {
 }
 
 type AccountsResponse struct {
-	Accounts []Account `json:"accounts"`
+	Accounts []*Account `json:"accounts"`
 }
 
 // GetAccounts implements https://docs.dydx.exchange/#get-accounts, it gets all accounts

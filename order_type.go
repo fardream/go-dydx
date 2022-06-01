@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 )
 
-// OrderType is the type of orders
+// OrderType indicates if the order is market, limit, stop, trailing stop or taking profit.
+// See https://docs.dydx.exchange/#order-types
 type OrderType string
 
 const (

@@ -30,7 +30,7 @@ type CreateOrderRequest struct {
 }
 
 type CreateOrderResponse struct {
-	Order Order `json:"order"`
+	Order *Order `json:"order,omitempty"`
 }
 
 // NewCreateOrderRequest

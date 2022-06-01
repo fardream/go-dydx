@@ -12,14 +12,14 @@ type FillsResponse struct {
 
 type Fill struct {
 	ID        string    `json:"id"`
-	Side      string    `json:"side"`
+	Side      OrderSide `json:"side"`
 	Liquidity string    `json:"liquidity"`
-	Type      string    `json:"type"`
+	Type      OrderType `json:"type"`
 	Market    string    `json:"market"`
 	OrderID   string    `json:"orderId"`
-	Price     string    `json:"price"`
-	Size      string    `json:"size"`
-	Fee       string    `json:"fee"`
+	Price     Decimal   `json:"price"`
+	Size      Decimal   `json:"size"`
+	Fee       Decimal   `json:"fee"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 

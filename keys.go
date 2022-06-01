@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
 )
 
 // ApiKey is the format from browser's local storage.
@@ -73,4 +74,56 @@ func NewStarkKey(ethAddress, publicKey, publicKeyYCoordinate, privateKey string)
 		PublicKeyYCoordinate: publicKeyYCoordinate,
 		LegacySigning:        false,
 	}
+}
+
+func (c *StarkKey) String() string {
+	return "empty"
+}
+
+func (c *StarkKey) Set(filename string) error {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	m, err := ParseStarkKeyMap(data)
+	if err != nil {
+		return err
+	}
+	if len(m) != 1 {
+		return fmt.Errorf("only one keys is allowed: %s", data)
+	}
+	for _, v := range m {
+		*c = *v
+	}
+	return nil
+}
+
+func (c *StarkKey) Type() string {
+	return "stark-key-map-file"
+}
+
+func (c *ApiKey) String() string {
+	return "empty"
+}
+
+func (c *ApiKey) Set(filename string) error {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	m, err := ParseApiKeyMap(data)
+	if err != nil {
+		return err
+	}
+	if len(m) != 1 {
+		return fmt.Errorf("only one keys is allowed: %s", data)
+	}
+	for _, v := range m {
+		*c = *v
+	}
+	return nil
+}
+
+func (c *ApiKey) Type() string {
+	return "api-key-map-file"
 }
