@@ -74,16 +74,13 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 	var wg sync.WaitGroup
 	defer wg.Wait()
 
-	// we need a separate inner ctx to cancel the readloop
-	inner_ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	// dial and create the connection.
 	dialer := &websocket.Dialer{
 		Proxy:            http.ProxyFromEnvironment,
 		HandshakeTimeout: 60 * time.Second,
 	}
-	conn, rsp, err := dialer.DialContext(inner_ctx, url, nil)
+
+	conn, rsp, err := dialer.DialContext(ctx, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to connect to websocket %s: %w\nresponse is %#v", url, err, rsp)
 	}
@@ -101,7 +98,7 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 		// close error channel.
 		defer close(err_chan)
 
-		err_chan <- loopRead(inner_ctx, conn, msg_chan)
+		err_chan <- loopRead(ctx, conn, msg_chan)
 	}()
 
 	b, _ := json.Marshal(subscribe)
@@ -114,7 +111,7 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 mainloop:
 	for {
 		select {
-		case <-inner_ctx.Done():
+		case <-ctx.Done():
 			// request cancelled.
 			// Close the connection.
 			if err = conn.WriteJSON(unsubscribe); err != nil {
@@ -124,6 +121,7 @@ mainloop:
 				return err
 			}
 			break mainloop
+
 		case msg, ok := <-msg_chan:
 			// message channel is closed.
 			// break out the loop
@@ -148,7 +146,7 @@ mainloop:
 
 			// send the response
 			select {
-			case <-inner_ctx.Done():
+			case <-ctx.Done():
 				break mainloop
 			case output <- resp:
 			}
