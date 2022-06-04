@@ -12,8 +12,9 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/huandu/xstrings"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/shopspring/decimal"
 	"golang.org/x/crypto/sha3"
 )
@@ -83,6 +84,29 @@ func FactToCondition(factRegistryAddress string, fact string) *big.Int {
 
 // GetTransferErc20Fact get erc20 fact
 // tokenDecimals is COLLATERAL_TOKEN_DECIMALS
+// This is taken from the orignal code below:
+// ```
+// func GetTransferErc20FactOld(recipient string, tokenDecimals int, humanAmount, tokenAddress, salt string) (string, error) {
+// 	fmt.Println("GetTransferErc20Fact", recipient, tokenDecimals, humanAmount, tokenAddress, salt)
+// 	// token_amount = float(human_amount) * (10 ** token_decimals)
+// 	amount, err := decimal.NewFromString(humanAmount)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	saltInt, ok := big.NewInt(0).SetString(salt, 0) // with prefix: 0x
+// 	if !ok {
+// 		return "", fmt.Errorf("invalid salt: %v,can not parse to big.Int", salt)
+// 	}
+// 	tokenAmount := amount.Mul(decimal.New(10, int32(tokenDecimals-1)))
+// 	fact := solsha3.SoliditySHA3(
+// 		// types
+// 		[]string{"address", "uint256", "address", "uint256"},
+// 		// values
+// 		[]interface{}{recipient, tokenAmount.String(), tokenAddress, saltInt.String()},
+// 	)
+// 	return hex.EncodeToString(fact), nil
+// }
+// ```
 func GetTransferErc20Fact(recipient string, tokenDecimals int, humanAmount, tokenAddress, salt string) (string, error) {
 	fmt.Println("GetTransferErc20Fact", recipient, tokenDecimals, humanAmount, tokenAddress, salt)
 	// token_amount = float(human_amount) * (10 ** token_decimals)
@@ -94,14 +118,31 @@ func GetTransferErc20Fact(recipient string, tokenDecimals int, humanAmount, toke
 	if !ok {
 		return "", fmt.Errorf("invalid salt: %v,can not parse to big.Int", salt)
 	}
-	tokenAmount := amount.Mul(decimal.New(10, int32(tokenDecimals-1)))
-	fact := solsha3.SoliditySHA3(
-		// types
-		[]string{"address", "uint256", "address", "uint256"},
-		// values
-		[]interface{}{recipient, tokenAmount.String(), tokenAddress, saltInt.String()},
-	)
-	return hex.EncodeToString(fact), nil
+	tokenAmountStr := amount.Mul(decimal.New(10, int32(tokenDecimals-1))).String()
+	tokenAmount, ok := big.NewInt(0).SetString(tokenAmountStr, 10)
+	if !ok {
+		return "", fmt.Errorf("cannot get token amount: %s", tokenAmountStr)
+	}
+
+	recp_addr, err := hex.DecodeString(strings.TrimPrefix(recipient, "0x"))
+	if err != nil {
+		return "", err
+	}
+	toekn_addr, err := hex.DecodeString(strings.TrimPrefix(tokenAddress, "0x"))
+	if err != nil {
+		return "", err
+	}
+
+	var b []byte
+	b = append(b, recp_addr...)
+	b = append(b, common.LeftPadBytes(math.U256Bytes(tokenAmount), 32)...)
+	b = append(b, toekn_addr...)
+	b = append(b, common.LeftPadBytes(math.U256Bytes(saltInt), 32)...)
+	d := sha3.NewLegacyKeccak256()
+
+	d.Write(b)
+
+	return hex.EncodeToString(d.Sum(nil)), nil
 }
 
 func GenerateKRfc6979(msgHash, priKey *big.Int, seed int) *big.Int {
