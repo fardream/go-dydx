@@ -92,7 +92,7 @@ Returns x, y, g such that g = x*a + y*b = gcd(a, b).
        4
 */
 func igcdex(a, b *big.Int) (*big.Int, *big.Int, *big.Int) {
-	if a.Cmp(zero) == 0 && a.Cmp(zero) == 0 {
+	if a.Cmp(zero) == 0 && b.Cmp(zero) == 0 {
 		return big.NewInt(0), big.NewInt(1), big.NewInt(0)
 	}
 	if a.Cmp(zero) == 0 {
