@@ -42,12 +42,12 @@ func (info *AccountInfoByMarket) AddPosition(position *Position) {
 }
 
 func (info *AccountInfoByMarket) AddFill(fill *Fill) {
-	filllist, ok := info.Fills[fill.OrderID]
+	fill_list, ok := info.Fills[fill.OrderID]
 	if !ok {
-		filllist = new(FillList)
-		info.Fills[fill.OrderID] = filllist
+		fill_list = new(FillList)
+		info.Fills[fill.OrderID] = fill_list
 	}
-	*filllist = append(*filllist, fill)
+	*fill_list = append(*fill_list, fill)
 }
 
 func (info *AccountInfoByMarket) AddOrder(order *Order) {
@@ -63,7 +63,7 @@ func (info *AccountInfoByMarket) AddOrder(order *Order) {
 // AccountProcessor can be used to process Account Channel Updates
 type AccountProcessor struct {
 	// processed response.
-	datas []*AccountChannelResponse
+	data []*AccountChannelResponse
 
 	Account *Account
 
@@ -88,14 +88,14 @@ func (ap *AccountProcessor) getAccountInfoByMarket(market string) *AccountInfoBy
 // ProcessChannelResponse processes the channel responses in sequence.
 func (ap *AccountProcessor) ProcessChannelResponse(resp *AccountChannelResponse) {
 	// store the update
-	ap.datas = append(ap.datas, resp)
+	ap.data = append(ap.data, resp)
 	// contents
 	contents := resp.Contents
 	if contents == nil {
 		return
 	}
 
-	// only update account if ap.Accont is nil
+	// only update account if ap.Account is nil
 	if ap.Account == nil {
 		if contents.Account != nil {
 			ap.Account = contents.Account

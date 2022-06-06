@@ -24,7 +24,7 @@ type OrderbookProcessor struct {
 	offset int64
 }
 
-// NewOrderbookProcessor creates a bookorder processor.
+// NewOrderbookProcessor creates a orderbook processor.
 // - set `dropData` to true to drop the updates.
 func NewOrderbookProcessor(market string, dropData bool) *OrderbookProcessor {
 	return &OrderbookProcessor{
@@ -59,14 +59,14 @@ func (ob *OrderbookProcessor) Process(resp *OrderbookChannelResponse) {
 
 // updateBook updates one side of the book (bids or asks)
 func (ob *OrderbookProcessor) updateBook(updates []*OrderbookOrder, book singleSideOrderbook) {
-updateloop:
+update_loop:
 	for _, order := range updates {
 		if order == nil {
 			continue
 		}
 		if order.Offset != nil {
 			if (*order.Offset) < ob.offset {
-				continue updateloop
+				continue update_loop
 			}
 			ob.offset = *order.Offset
 		}
@@ -105,8 +105,8 @@ func (ob *OrderbookProcessor) BookTop() (*OrderbookOrder, *OrderbookOrder) {
 type singleSideOrderbook interface {
 	// allow heap operations on this type
 	heap.Interface[*OrderbookOrder]
-	getPriceLevelIndex(pricestr string) (int, bool)
-	updatePriceLevelSize(pricestr string, news_size Decimal)
+	getPriceLevelIndex(priceStr string) (int, bool)
+	updatePriceLevelSize(priceStr string, newSize Decimal)
 }
 
 var (
@@ -161,13 +161,13 @@ func (m *mappedBook) Push(order *OrderbookOrder) {
 	m.locations[order.PriceString] = len(m.orders) - 1
 }
 
-func (m *mappedBook) getPriceLevelIndex(pricestr string) (int, bool) {
-	r, ok := m.locations[pricestr]
+func (m *mappedBook) getPriceLevelIndex(priceStr string) (int, bool) {
+	r, ok := m.locations[priceStr]
 	return r, ok
 }
 
-func (m *mappedBook) updatePriceLevelSize(pricestr string, news_size Decimal) {
-	r, ok := m.locations[pricestr]
+func (m *mappedBook) updatePriceLevelSize(priceStr string, news_size Decimal) {
+	r, ok := m.locations[priceStr]
 	if ok {
 		m.orders[r].Size = news_size
 	}

@@ -71,26 +71,26 @@ func getParamsString(input any) (string, error) {
 // dydxPath is used in the signing of the request (when isPublic is true)
 func doRequest[TResponse any](ctx context.Context, c *Client, httpMethod, dydxPath string, params any, body []byte, isPublic bool) (*TResponse, error) {
 	// get parameter string
-	paramstr, err := getParamsString(params)
+	param_str, err := getParamsString(params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get parameter string %#v: %w", params, err)
 	}
 
 	// the get dydx path
 	path_seg := fmt.Sprintf("/v3/%s", dydxPath)
-	if len(paramstr) > 0 {
-		path_seg = fmt.Sprintf("%s?%s", path_seg, paramstr)
+	if len(param_str) > 0 {
+		path_seg = fmt.Sprintf("%s?%s", path_seg, param_str)
 	}
 
-	fullpath := urlJoin(c.rpcUrl, path_seg)
+	full_path := urlJoin(c.rpcUrl, path_seg)
 
 	// setup timeout
 	timeout_ctx, cancel := context.WithTimeout(ctx, c.timeOut)
 	defer cancel()
 
-	log.Debugf("sending %s request to %s", httpMethod, fullpath)
+	log.Debugf("sending %s request to %s", httpMethod, full_path)
 
-	req, err := http.NewRequestWithContext(timeout_ctx, httpMethod, fullpath, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(timeout_ctx, httpMethod, full_path, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
