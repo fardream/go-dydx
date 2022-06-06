@@ -74,13 +74,16 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 	var wg sync.WaitGroup
 	defer wg.Wait()
 
+	inner_ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	// dial and create the connection.
 	dialer := &websocket.Dialer{
 		Proxy:            http.ProxyFromEnvironment,
 		HandshakeTimeout: 60 * time.Second,
 	}
 
-	conn, rsp, err := dialer.DialContext(ctx, url, nil)
+	conn, rsp, err := dialer.DialContext(inner_ctx, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to connect to websocket %s: %w\nresponse is %#v", url, err, rsp)
 	}
@@ -98,35 +101,27 @@ func subscribeForType[TData any](ctx context.Context, url string, subscribe any,
 		// close error channel.
 		defer close(err_chan)
 
-		err_chan <- loopRead(ctx, conn, msg_chan)
+		select {
+		case err_chan <- loopRead(inner_ctx, conn, msg_chan):
+		case <-inner_ctx.Done():
+		}
 	}()
-
-	b, _ := json.Marshal(subscribe)
-	log.Debugf("subscribe with: %s", string(b))
 
 	if err = conn.WriteJSON(subscribe); err != nil {
 		return fmt.Errorf("failed to write subscribe request %#v: %w", subscribe, err)
 	}
 
-mainloop:
+write_loop:
 	for {
 		select {
-		case <-ctx.Done():
-			// request cancelled.
-			// Close the connection.
-			if err = conn.WriteJSON(unsubscribe); err != nil {
-				return err
-			}
-			if err = conn.WriteControl(websocket.CloseMessage, nil, time.Now().Add(time.Second*2)); err != nil {
-				return err
-			}
-			break mainloop
+		case <-inner_ctx.Done():
+			break write_loop
 
 		case msg, ok := <-msg_chan:
 			// message channel is closed.
 			// break out the loop
 			if !ok {
-				break mainloop
+				break write_loop
 			}
 
 			// parse the response
@@ -135,24 +130,28 @@ mainloop:
 			err := json.Unmarshal(msg, &resp)
 			if err != nil {
 				log.Warnf("failed to parse data: %v", err)
-				continue mainloop
+				continue write_loop
 			}
 
 			if resp.Type == ChannelResponseTypeSubscribe {
 				unsubscribe.Id = resp.Id
 			} else if resp.Type == ChannelResponseTypeError {
+				// cancel everything
+				cancel()
+				unsubscribeAndClose(conn, nil)
 				return fmt.Errorf("subscription error: %s", resp.Message)
 			}
 
 			// send the response
 			select {
-			case <-ctx.Done():
-				break mainloop
+			case <-inner_ctx.Done():
+				break write_loop
 			case output <- resp:
 			}
 
-		case err = <-err_chan:
-			// the read loop errored.
+		case err := <-err_chan:
+			log.Debugf("received error: %v", err)
+			// the read loop error-ed.
 			if err != nil {
 				log.Warnf("err received from read loop, quit: %#v", err)
 				return err
@@ -160,8 +159,27 @@ mainloop:
 		}
 	}
 
+	if err := unsubscribeAndClose(conn, unsubscribe); err != nil {
+		return err
+	}
+
 	// drain the error channel
 	return <-err_chan
+}
+
+func unsubscribeAndClose(conn *websocket.Conn, unsubscribe *unsubscribeRequest) error {
+	// request cancelled.
+	// Close the connection.
+	if unsubscribe != nil {
+		if err := conn.WriteJSON(unsubscribe); err != nil {
+			return err
+		}
+	}
+	if err := conn.WriteControl(websocket.CloseMessage, nil, time.Now().Add(time.Second*2)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // loopRead reads the data from the connection
@@ -173,6 +191,7 @@ func loopRead(ctx context.Context, conn *websocket.Conn, output chan<- []byte) e
 				return nil
 			}
 			log.Warnf("error reading websocket: %#v", err)
+			log.Warnf("quit read loop")
 			return err
 		}
 
