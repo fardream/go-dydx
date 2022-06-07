@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// OrderbookOrder is an entry on the order book, it only contains price, quantity, and potentially an offset.
 type OrderbookOrder struct {
 	Price  Decimal `json:"price"`
 	Size   Decimal `json:"size"`

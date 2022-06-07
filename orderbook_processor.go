@@ -90,12 +90,12 @@ func updatePriceLevel[T singleSideOrderbook](ob T, order *OrderbookOrder) {
 // BookTop returns the best bid and ask of the book. nil if the side of the book is empty.
 func (ob *OrderbookProcessor) BookTop() (*OrderbookOrder, *OrderbookOrder) {
 	var bid *OrderbookOrder
-	if len(ob.Bids.orders) > 0 {
-		bid = ob.Bids.orders[0]
+	if len(ob.Bids.Orders) > 0 {
+		bid = ob.Bids.Orders[0]
 	}
 	var ask *OrderbookOrder
-	if len(ob.Asks.orders) > 0 {
-		ask = ob.Asks.orders[0]
+	if len(ob.Asks.Orders) > 0 {
+		ask = ob.Asks.Orders[0]
 	}
 	return bid, ask
 }
@@ -114,51 +114,53 @@ var (
 	_ singleSideOrderbook = (*Asks)(nil)
 )
 
+// Bids side of the book.
 type Bids struct {
 	mappedBook
 }
 
 func (b *Bids) Less(i, j int) bool {
-	return b.orders[i].Price.GreaterThan(b.orders[j].Price)
+	return b.Orders[i].Price.GreaterThan(b.Orders[j].Price)
 }
 
+// Asks side of the book.
 type Asks struct {
 	mappedBook
 }
 
 func (a *Asks) Less(i, j int) bool {
-	return a.orders[i].Price.LessThan(a.orders[j].Price)
+	return a.Orders[i].Price.LessThan(a.Orders[j].Price)
 }
 
 // mappedBook contains all the supporting functions for singleSideOrderbook without the less function.
 type mappedBook struct {
-	orders    []*OrderbookOrder
+	Orders    []*OrderbookOrder
 	locations map[string]int
 }
 
 func (m *mappedBook) Len() int {
-	return len(m.orders)
+	return len(m.Orders)
 }
 
 func (m *mappedBook) Swap(i, j int) {
-	m.locations[m.orders[i].PriceString], m.locations[m.orders[j].PriceString] = j, i
-	m.orders[i], m.orders[j] = m.orders[j], m.orders[i]
+	m.locations[m.Orders[i].PriceString], m.locations[m.Orders[j].PriceString] = j, i
+	m.Orders[i], m.Orders[j] = m.Orders[j], m.Orders[i]
 }
 
 func (m *mappedBook) Pop() *OrderbookOrder {
-	if len(m.orders) == 0 {
+	if len(m.Orders) == 0 {
 		return nil
 	}
-	order := m.orders[len(m.orders)-1]
-	m.orders = m.orders[0 : len(m.orders)-1]
+	order := m.Orders[len(m.Orders)-1]
+	m.Orders = m.Orders[0 : len(m.Orders)-1]
 	delete(m.locations, order.PriceString)
 
 	return order
 }
 
 func (m *mappedBook) Push(order *OrderbookOrder) {
-	m.orders = append(m.orders, order)
-	m.locations[order.PriceString] = len(m.orders) - 1
+	m.Orders = append(m.Orders, order)
+	m.locations[order.PriceString] = len(m.Orders) - 1
 }
 
 func (m *mappedBook) getPriceLevelIndex(priceStr string) (int, bool) {
@@ -169,13 +171,13 @@ func (m *mappedBook) getPriceLevelIndex(priceStr string) (int, bool) {
 func (m *mappedBook) updatePriceLevelSize(priceStr string, news_size Decimal) {
 	r, ok := m.locations[priceStr]
 	if ok {
-		m.orders[r].Size = news_size
+		m.Orders[r].Size = news_size
 	}
 }
 
 func (m *mappedBook) PrintBook() string {
 	var b strings.Builder
-	for index, v := range m.orders {
+	for index, v := range m.Orders {
 		fmt.Fprintf(&b, "%d : %s @ $%s\n", index, v.Price.String(), v.Size.String())
 	}
 	return b.String()
