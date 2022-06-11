@@ -48,62 +48,8 @@ func (a *ApiKey) Sign(requestPath, method, isoTimestamp string, body []byte) str
 	return base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
 
-// StarkKey
-type StarkKey struct {
-	WalletAddress        string `json:"walletAddress"`
-	PublicKey            string `json:"publicKey"`
-	PublicKeyYCoordinate string `json:"publicKeyYCoordinate"`
-	PrivateKey           string `json:"privateKey"`
-	LegacySigning        bool   `json:"legacySigning"`
-	WalletType           string `json:"walletType"`
-}
-
-func ParseStarkKeyMap(input []byte) (map[string]*StarkKey, error) {
-	result := make(map[string]*StarkKey)
-	if err := json.Unmarshal(input, &result); err != nil {
-		return nil, fmt.Errorf("cannot parse json: %w", err)
-	}
-	return result, nil
-}
-
-func NewStarkKey(ethAddress, publicKey, publicKeyYCoordinate, privateKey string) *StarkKey {
-	return &StarkKey{
-		WalletAddress:        ethAddress,
-		PublicKey:            publicKey,
-		PrivateKey:           privateKey,
-		PublicKeyYCoordinate: publicKeyYCoordinate,
-		LegacySigning:        false,
-	}
-}
-
-func (c *StarkKey) String() string {
-	return "empty"
-}
-
-func (c *StarkKey) Set(filename string) error {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-	m, err := ParseStarkKeyMap(data)
-	if err != nil {
-		return err
-	}
-	if len(m) != 1 {
-		return fmt.Errorf("only one keys is allowed: %s", data)
-	}
-	for _, v := range m {
-		*c = *v
-	}
-	return nil
-}
-
-func (c *StarkKey) Type() string {
-	return "stark-key-map-file"
-}
-
 func (c *ApiKey) String() string {
-	return "empty"
+	return fmt.Sprintf("key: %s - passphrase: %s - secret: (redacted)", c.Key, c.Passphrase)
 }
 
 func (c *ApiKey) Set(filename string) error {
@@ -126,4 +72,57 @@ func (c *ApiKey) Set(filename string) error {
 
 func (c *ApiKey) Type() string {
 	return "api-key-map-file"
+}
+
+// StarkKey is the private key on the Stark L2.
+// Below fields are from the browser cache but unused.
+// - WalletAddress        string `json:"walletAddress"`
+// - LegacySigning        bool   `json:"legacySigning"`
+// - WalletType           string `json:"walletType"`
+type StarkKey struct {
+	PublicKey            string `json:"publicKey"`
+	PublicKeyYCoordinate string `json:"publicKeyYCoordinate"`
+	PrivateKey           string `json:"privateKey"`
+}
+
+func ParseStarkKeyMap(input []byte) (map[string]*StarkKey, error) {
+	result := make(map[string]*StarkKey)
+	if err := json.Unmarshal(input, &result); err != nil {
+		return nil, fmt.Errorf("cannot parse json: %w", err)
+	}
+	return result, nil
+}
+
+func NewStarkKey(publicKey, publicKeyYCoordinate, privateKey string) *StarkKey {
+	return &StarkKey{
+		PublicKey:            publicKey,
+		PrivateKey:           privateKey,
+		PublicKeyYCoordinate: publicKeyYCoordinate,
+	}
+}
+
+func (c *StarkKey) String() string {
+	return fmt.Sprintf("public key: %s - public key y: %s - private key: (redacted)", c.PublicKey, c.PublicKeyYCoordinate)
+}
+
+func (c *StarkKey) Set(filename string) error {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	m, err := ParseStarkKeyMap(data)
+	if err != nil {
+		return err
+	}
+	if len(m) != 1 {
+		return fmt.Errorf("only one keys is allowed: %s", data)
+	}
+	for _, v := range m {
+		*c = *v
+	}
+	return nil
+}
+
+func (c *StarkKey) Type() string {
+	return "stark-key-map-file"
 }

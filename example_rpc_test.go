@@ -16,7 +16,6 @@ func Example() {
 	const ethAddress = "<eth address>"
 	client, err := dydx.NewClient(
 		dydx.NewStarkKey(
-			ethAddress,
 			"<stark pubkey>",
 			"<stark pubkey y coordinate>",
 			"<stark private key>"),
