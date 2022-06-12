@@ -17,7 +17,7 @@ type SignTypedData interface {
 	EthSignTypedData(typedData apitypes.TypedData) ([]byte, error)
 }
 
-// ecdsaPrivateKeySigner implements the ByteSigner interface for ecdsa.PrivateKey
+// ecdsaPrivateKeySigner implements the SignTypedData interface for ecdsa.PrivateKey
 type ecdsaPrivateKeySigner ecdsa.PrivateKey
 
 // NewEcdsaPrivateKeySigner converts an *ecdsa.PrivateKey into a signer to EthSignTypedData
@@ -34,10 +34,12 @@ func prepareTypedDataForSign(typedData apitypes.TypedData) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate domain separator: %w", err)
 	}
+
 	typedDataHash, err := typedData.HashStruct(typedData.PrimaryType, typedData.Message)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate typed data hash: %w", err)
 	}
+
 	rawData := []byte(fmt.Sprintf("\x19\x01%s%s", string(domainSeparator), string(typedDataHash)))
 
 	return rawData, nil

@@ -1,9 +1,11 @@
 package dydx
 
 import (
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
@@ -60,17 +62,18 @@ func getOnboardingTypedData(isMainnet bool, action string) apitypes.TypedData {
 
 // DeriveStarkKey gets the default deterministic stark key.
 //
+// Derived from the python implementation of official dydx client:
+// https://github.com/dydxprotocol/dydx-v3-python/blob/914fc66e542d82080702e03f6ad078ca2901bb46/dydx3/modules/onboarding.py#L116-L145
+//
 // - sign the typed data for key derivation.
 //
 // - append 0 to the signature.
 //
-// - convert the siganture to a big int.
-//
-// - in python implementation, it looks like the resulting big int is crypto.keccak
-// hashed as an uint256, and uint256 is 32 bytes. however, in reality, it takes
+// - crypto.keccak hash the signature bytes.
+// in python implementation, it convert the siganture to a big int.
+// and the resulting big int is crypto.keccak
+// hashed as an uint256 - note uint256 is 32 bytes. however, in reality, it takes
 // the whole 66 bytes and hashes it.
-//
-// - crypto.keccak hash the signature bytes
 //
 // - convert the resulted signature bytes into a big int.
 //
@@ -86,7 +89,7 @@ func DeriveStarkKey(signer SignTypedData, isMainnet bool) (*StarkKey, error) {
 
 	signature, err := signer.EthSignTypedData(msg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to sign typed data %#v: %w", msg, err)
 	}
 	// here must append an extra byte of 0 (SIGNATURE_TYPE_NO_PREPEND)
 	signature = append(signature, byte(0))
@@ -108,4 +111,64 @@ func DeriveStarkKey(signer SignTypedData, isMainnet bool) (*StarkKey, error) {
 	}
 
 	return NewStarkKey(hex.EncodeToString(x.Bytes()), hex.EncodeToString(y.Bytes()), hex.EncodeToString(privateKey.Bytes())), nil
+}
+
+// RecoverDefaultApiKeyCredentials recovers the default credentials.
+//
+// Implementation is a carbon-copy of the code in python version of official dydx client:
+// https://github.com/dydxprotocol/dydx-v3-python/blob/914fc66e542d82080702e03f6ad078ca2901bb46/dydx3/modules/onboarding.py#L147-L184
+func RecoverDefaultApiKeyCredentials(signer SignTypedData, isMainnet bool) (*ApiKey, error) {
+	msg := getOnboardingTypedData(isMainnet, onboardingAction)
+	signature_raw, err := signer.EthSignTypedData(msg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign typed data %#v: %w", msg, err)
+	}
+	// here must append an extra byte of 0 (SIGNATURE_TYPE_NO_PREPEND)
+	signature_raw = append(signature_raw, 0)
+
+	// Python will convert signature into hex, the convert the values into big int, and then hash that bytes of the big int.
+	// we simply use the raw bytes in signature_raw.
+	//
+	// signature := hexutil.Encode(signature_raw)
+
+	// In python implementation, signature_raw is hex encoded with 0x prefix, the 64 characters without
+	// the 0x prefix is taken to make a 32 byte big int. Then the whole big int is hashed as uint256, which
+	// is fortunately 32 byte long.
+	// ```
+	// r_hex := signature[2:66]
+	// r_int, ok := new(big.Int).SetString(r_hex, 16)
+	// if !ok {
+	// 	return nil, fmt.Errorf("%s is not a proper big int hex", r_hex)
+	// }
+	// hashed_r_bytes := crypto.Keccak256(r_int.Bytes())
+	// ```
+	hashed_r_bytes := crypto.Keccak256(signature_raw[:32])
+
+	secret_bytes := hashed_r_bytes[:30]
+
+	// Similarly to what happend to hashed_r_bytes, here python converts everything into big int and hash that,
+	// here we simply take the 32-64 byte of the signature.
+	//
+	// ```
+	// s_hex := signature[66:130]
+	// s_int, ok := new(big.Int).SetString(s_hex, 16)
+	// if !ok {
+	// 	return nil, fmt.Errorf("%s is not a proper big int hex", s_hex)
+	// }
+	// hashed_s_bytes := crypto.Keccak256(s_int.Bytes())
+	// ```
+	hashed_s_bytes := crypto.Keccak256(signature_raw[32:64])
+	key_bytes := hashed_s_bytes[:16]
+	passphrase_bytes := hashed_s_bytes[16:31]
+
+	key_hex := hex.EncodeToString(key_bytes)
+	key_uuid := strings.Join([]string{
+		key_hex[:8],
+		key_hex[8:12],
+		key_hex[12:16],
+		key_hex[16:20],
+		key_hex[20:],
+	}, "-")
+
+	return NewApiKey(key_uuid, base64.URLEncoding.EncodeToString(passphrase_bytes), base64.URLEncoding.EncodeToString(secret_bytes)), nil
 }

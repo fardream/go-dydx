@@ -10,13 +10,15 @@ import (
 )
 
 // ApiKey is the format from browser's local storage.
+// Below are from browser but not necessary
+//
+// - WalletAddress string `json:"walletAddress"`
+// - LegacySigning bool   `json:"legacySigning"`
+// - WalletType    string `json:"walletType"`
 type ApiKey struct {
-	WalletAddress string `json:"walletAddress"`
-	Secret        string `json:"secret"`
-	Key           string `json:"key"`
-	Passphrase    string `json:"passphrase"`
-	LegacySigning bool   `json:"legacySigning"`
-	WalletType    string `json:"walletType"`
+	Secret     string `json:"secret"`
+	Key        string `json:"key"`
+	Passphrase string `json:"passphrase"`
 }
 
 func ParseApiKeyMap(input []byte) (map[string]*ApiKey, error) {
@@ -30,13 +32,11 @@ func ParseApiKeyMap(input []byte) (map[string]*ApiKey, error) {
 	return result, nil
 }
 
-func NewApiKey(ethAddress, key, passphrase, secret string) *ApiKey {
+func NewApiKey(key, passphrase, secret string) *ApiKey {
 	return &ApiKey{
-		WalletAddress: ethAddress,
-		Key:           key,
-		Passphrase:    passphrase,
-		Secret:        secret,
-		LegacySigning: false,
+		Key:        key,
+		Passphrase: passphrase,
+		Secret:     secret,
 	}
 }
 

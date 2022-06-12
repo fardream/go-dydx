@@ -27,7 +27,6 @@ func ExampleClient_NewOrder() {
 			"<stark pubkey y coordinate>",
 			"<stark private key>"),
 		dydx.NewApiKey(
-			ethAddress,
 			"<api key>",
 			"<api passphrase>",
 			"<api secret>"),
