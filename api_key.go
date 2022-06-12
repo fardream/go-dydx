@@ -40,6 +40,7 @@ func NewApiKey(ethAddress, key, passphrase, secret string) *ApiKey {
 	}
 }
 
+// Sign a request for dydx
 func (a *ApiKey) Sign(requestPath, method, isoTimestamp string, body []byte) string {
 	message := fmt.Sprintf("%s%s%s%s", isoTimestamp, method, requestPath, body)
 	secret, _ := base64.URLEncoding.DecodeString(a.Secret)
@@ -48,10 +49,12 @@ func (a *ApiKey) Sign(requestPath, method, isoTimestamp string, body []byte) str
 	return base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
 
+// String prints out the key, for cobra cli.
 func (c *ApiKey) String() string {
 	return fmt.Sprintf("key: %s - passphrase: %s - secret: (redacted)", c.Key, c.Passphrase)
 }
 
+// Set reads the file containing the ApiKey, for cobra cli.
 func (c *ApiKey) Set(filename string) error {
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -70,6 +73,7 @@ func (c *ApiKey) Set(filename string) error {
 	return nil
 }
 
+// Type is for cobra cli.
 func (c *ApiKey) Type() string {
 	return "api-key-map-file"
 }
