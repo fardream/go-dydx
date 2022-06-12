@@ -19,9 +19,9 @@ func TestDeriveStarkKey(t *testing.T) {
 		t.Fatalf("%s is not marshalled into private key: %#v", private_key_hex, err)
 	}
 	stark_key_python_testnet := dydx.NewStarkKey(
-		"05ca235e41160c7c2a4695a98eecf7cb0ba6f7d26c4f899c192ca91912995115",
+		"5ca235e41160c7c2a4695a98eecf7cb0ba6f7d26c4f899c192ca91912995115",
 		"e07e9de2353c45e92b98e6c566fce8686f7fb620031aa7a79a5983daf22483",
-		"03c6ce687a484ac1c50a48498092832957a3154c7c13237bc10df6965472e009",
+		"3c6ce687a484ac1c50a48498092832957a3154c7c13237bc10df6965472e009",
 	)
 
 	stark_key_testnet, err := dydx.DeriveStarkKey(dydx.NewEcdsaPrivateKeySigner(private_key), false)
@@ -35,9 +35,9 @@ func TestDeriveStarkKey(t *testing.T) {
 	}
 
 	stark_key_python_mainnet := dydx.NewStarkKey(
-		"0470eb1f2bb80a4785e328efbcc41a4fad9060df9b210b848ad12fd4251a4fdc",
-		"02f2fc80a218b2dee950c9ed69218e5b89bcb205c48b494c4fc6e856ecc31d7a",
-		"01b480e13db79d66cc62dba6dc64536fa3242531a0c840add19cf1a04dd77866",
+		"470eb1f2bb80a4785e328efbcc41a4fad9060df9b210b848ad12fd4251a4fdc",
+		"2f2fc80a218b2dee950c9ed69218e5b89bcb205c48b494c4fc6e856ecc31d7a",
+		"1b480e13db79d66cc62dba6dc64536fa3242531a0c840add19cf1a04dd77866",
 	)
 
 	stark_key_mainnet, err := dydx.DeriveStarkKey(dydx.NewEcdsaPrivateKeySigner(private_key), true)
