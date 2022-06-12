@@ -1,7 +1,6 @@
 package dydx
 
 import (
-	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -20,16 +19,6 @@ const (
 )
 
 const eip712StructName = "dYdX"
-
-// ByteSigner can sign raw bytes according to Ethereum convention.
-type ByteSigner interface {
-	// EthSignRawData signs the raw data
-	EthSignRawData(data []byte) ([]byte, error)
-}
-
-func (s *ecdsaPrivateKeySigner) EthSignRawData(data []byte) ([]byte, error) {
-	return crypto.Sign(crypto.Keccak256(data), (*ecdsa.PrivateKey)(s))
-}
 
 func getOnboardingTypedData(isMainnet bool, action string) apitypes.TypedData {
 	result := apitypes.TypedData{
