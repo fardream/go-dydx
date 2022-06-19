@@ -20,8 +20,7 @@ type OrderbookProcessor struct {
 
 	dropData bool
 
-	Data   []*OrderbookChannelResponse
-	offset int64
+	Data []*OrderbookChannelResponse
 }
 
 // NewOrderbookProcessor creates a orderbook processor.
@@ -47,10 +46,8 @@ func (ob *OrderbookProcessor) Process(resp *OrderbookChannelResponse) {
 	}
 
 	if contents.Offset != nil {
-		if (*contents.Offset) < ob.offset {
-			return
-		}
-		ob.offset = *contents.Offset
+		ob.Bids.updateOffset(contents.Offset)
+		ob.Asks.updateOffset(contents.Offset)
 	}
 
 	ob.updateBook(contents.Bids, &ob.Bids)
@@ -59,16 +56,9 @@ func (ob *OrderbookProcessor) Process(resp *OrderbookChannelResponse) {
 
 // updateBook updates one side of the book (bids or asks)
 func (ob *OrderbookProcessor) updateBook(updates []*OrderbookOrder, book singleSideOrderbook) {
-update_loop:
 	for _, order := range updates {
 		if order == nil {
 			continue
-		}
-		if order.Offset != nil {
-			if (*order.Offset) < ob.offset {
-				continue update_loop
-			}
-			ob.offset = *order.Offset
 		}
 		updatePriceLevel(book, order)
 	}
@@ -76,7 +66,11 @@ update_loop:
 
 // updatePriceLevel update one price level
 func updatePriceLevel[T singleSideOrderbook](ob T, order *OrderbookOrder) {
-	index, ok := ob.getPriceLevelIndex(order.PriceString)
+	index, orig_order, ok := ob.getPriceLevelIndex(order.PriceString)
+	if ok && !orig_order.IsOtherNewerOffset(order) {
+		return
+	}
+
 	switch {
 	case order.Size.IsZero() && ok:
 		heap.Remove[T, *OrderbookOrder](ob, index)
@@ -105,7 +99,7 @@ func (ob *OrderbookProcessor) BookTop() (*OrderbookOrder, *OrderbookOrder) {
 type singleSideOrderbook interface {
 	// allow heap operations on this type
 	heap.Interface[*OrderbookOrder]
-	getPriceLevelIndex(priceStr string) (int, bool)
+	getPriceLevelIndex(priceStr string) (int, *OrderbookOrder, bool)
 	updatePriceLevelSize(priceStr string, newSize Decimal)
 }
 
@@ -138,6 +132,14 @@ type mappedBook struct {
 	locations map[string]int
 }
 
+func (m *mappedBook) updateOffset(offset *int64) {
+	for _, v := range m.Orders {
+		if v.Offset == nil {
+			v.Offset = offset
+		}
+	}
+}
+
 func (m *mappedBook) Len() int {
 	return len(m.Orders)
 }
@@ -163,9 +165,15 @@ func (m *mappedBook) Push(order *OrderbookOrder) {
 	m.locations[order.PriceString] = len(m.Orders) - 1
 }
 
-func (m *mappedBook) getPriceLevelIndex(priceStr string) (int, bool) {
+func (m *mappedBook) getPriceLevelIndex(priceStr string) (int, *OrderbookOrder, bool) {
 	r, ok := m.locations[priceStr]
-	return r, ok
+	if !ok {
+		return r, nil, false
+	}
+	if r >= len(m.Orders) {
+		return 0, nil, false
+	}
+	return r, m.Orders[r], true
 }
 
 func (m *mappedBook) updatePriceLevelSize(priceStr string, news_size Decimal) {

@@ -64,7 +64,7 @@ func newLsPublicCmd() *lsPublicCmd {
 	c.Flags().Var(&c.sublength, "subscribe-length", "how long to subscribe to")
 
 	c.orderbook.Flags().BoolVar(&c.orderbookTop, "top", false, "show order book top instead of the data")
-	c.orderbook.Flags().StringVarP(&c.outputFile, "out", "o", "", "dump messages into a directory")
+	c.orderbook.Flags().StringVarP(&c.outputFile, "out", "o", "", "dump messages for orderbook into a directory")
 	c.orderbook.MarkFlagFilename("out", "json")
 
 	c.orderbook.Run = c.doOrderbook
@@ -77,6 +77,10 @@ func newLsPublicCmd() *lsPublicCmd {
 }
 
 func (c *lsPublicCmd) doOrderbook(*cobra.Command, []string) {
+	if c.market == "" {
+		orPanic(fmt.Errorf("market is required for orderbook request"))
+	}
+
 	client := getOrPanic(dydx.NewClient(nil, nil, "", c.isMainnet))
 	if !c.sub {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.timeout))

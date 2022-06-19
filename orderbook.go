@@ -68,3 +68,11 @@ func (c *Client) GetOrderbook(ctx context.Context, market string) (*OrderbookRes
 	}
 	return doRequest[OrderbookResponse](ctx, c, http.MethodGet, urlJoin("orderbook", market), "", nil, true)
 }
+
+func (o *OrderbookOrder) IsOtherNewerOffset(other *OrderbookOrder) bool {
+	if o.Offset == nil || other.Offset == nil {
+		return true
+	}
+
+	return (*o.Offset) < (*other.Offset)
+}

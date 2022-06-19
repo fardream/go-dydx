@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -78,13 +77,14 @@ func defaultLoopPrinter[T any](v *dydx.ChannelResponse[T]) {
 }
 
 func runLoop[T any](sub func(context.Context, chan<- *dydx.ChannelResponse[T]) error, length time.Duration, printer func(*dydx.ChannelResponse[T])) {
-	ctx, cancel := context.WithTimeout(context.Background(), length)
-	defer cancel()
+	timeout_ctx, timeout_cancel := context.WithTimeout(context.Background(), length)
+	defer timeout_cancel()
+
 	var wg sync.WaitGroup
 	defer wg.Wait()
 
-	sig_chan := make(chan os.Signal, 5)
-	signal.Notify(sig_chan, syscall.SIGINT)
+	ctx, cancel := signal.NotifyContext(timeout_ctx, syscall.SIGINT)
+	defer cancel()
 
 	wg.Add(1)
 	outputs := make(chan *dydx.ChannelResponse[T])
@@ -94,24 +94,11 @@ func runLoop[T any](sub func(context.Context, chan<- *dydx.ChannelResponse[T]) e
 		orPanic(sub(ctx, outputs))
 	}()
 
-	sigint_called := 0
 sigloop:
-	for {
-		select {
-		case <-sig_chan:
-			sigint_called++
-			cancel()
-			if sigint_called >= 5 {
-				orPanic(fmt.Errorf("sigint called 5 times, quit"))
-			}
-		case v, ok := <-outputs:
-			if !ok {
-				break sigloop
-			}
-			if v.Contents == nil {
-				continue sigloop
-			}
-			printer(v)
+	for v := range outputs {
+		if v.Contents == nil {
+			continue sigloop
 		}
+		printer(v)
 	}
 }
