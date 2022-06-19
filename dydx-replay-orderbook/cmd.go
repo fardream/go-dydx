@@ -1,3 +1,4 @@
+// dydx-replay-orderbook is a cli to replay orderbook updates from dydx websocket subscription.
 package main
 
 import (

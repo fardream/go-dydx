@@ -1,3 +1,4 @@
+// starkex provides signing and other algorithms for starkex (https://starkware.co/starkex/).
 package starkex
 
 import (

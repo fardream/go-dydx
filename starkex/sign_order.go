@@ -36,7 +36,7 @@ func (s *OrderSigner) initMsg() error {
 	}
 	assetId := COLLATERAL_ASSET_ID_BY_NETWORK_ID[s.param.NetworkId] // asset id
 	if assetId == nil {
-		return errors.New(fmt.Sprintf("invalid network_id: %v", s.param.NetworkId))
+		return fmt.Errorf("invalid network_id: %v", s.param.NetworkId)
 	}
 	exp, err := time.Parse("2006-01-02T15:04:05.000Z", s.param.Expiration)
 	if err != nil {
@@ -51,11 +51,9 @@ func (s *OrderSigner) initMsg() error {
 	if err != nil {
 		return err
 	}
-	quantumsAmountSynthetic := decimal.NewFromFloat(0)
+	quantumsAmountSynthetic := size.Mul(price).Mul(resolutionUsdc).RoundUp(0)
 	isBuy := s.param.Side == "BUY"
-	if isBuy {
-		quantumsAmountSynthetic = size.Mul(price).Mul(resolutionUsdc).RoundUp(0)
-	} else {
+	if !isBuy {
 		quantumsAmountSynthetic = size.Mul(price).Mul(resolutionUsdc).RoundDown(0)
 	}
 	limitFeeRounded, err := decimal.NewFromString(s.param.LimitFee)

@@ -8,18 +8,6 @@ const (
 )
 
 const (
-	SignatureTypeNoPrepend   = 0
-	SignatureTypeDecimal     = 1
-	SignatureTypeHexadecimal = 2
-)
-
-const (
-	Domain                       = "dYdX"
-	Version                      = "1.0"
-	Eip712DomainStringNoContract = "EIP712Domain(string name,string version,uint256 chainId)"
-)
-
-const (
 	NetworkIdMainnet = 1
 	NetworkIdRopsten = 3
 )

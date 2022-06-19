@@ -1,7 +1,6 @@
 package starkex
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -41,7 +40,7 @@ func (s *WithdrawSigner) initMsg() error {
 func (s *WithdrawSigner) getHash() (string, error) {
 	net := COLLATERAL_ASSET_ID_BY_NETWORK_ID[s.param.NetworkId]
 	if net == nil {
-		return "", errors.New(fmt.Sprintf("invalid network_id: %v", s.param.NetworkId))
+		return "", fmt.Errorf("invalid network_id: %v", s.param.NetworkId)
 	}
 	// packed
 	packed := big.NewInt(WITHDRAWAL_PREFIX)

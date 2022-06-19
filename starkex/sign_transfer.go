@@ -1,7 +1,6 @@
 package starkex
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -35,7 +34,7 @@ func (s *TransferSigner) initMsg() error {
 	}
 	receiverKey, ok := big.NewInt(0).SetString(strings.TrimPrefix(s.param.ReceiverPublicKey, "0x"), 16)
 	if !ok {
-		return errors.New(fmt.Sprintf("invalid receiver_public_key: %v", s.param.ReceiverPublicKey))
+		return fmt.Errorf("invalid receiver_public_key: %v", s.param.ReceiverPublicKey)
 	}
 	fact, err := s.getFact()
 	if err != nil {

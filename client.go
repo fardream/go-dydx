@@ -1,8 +1,6 @@
 package dydx
 
-import (
-	"time"
-)
+import "time"
 
 type clientOption func(c *Client)
 
