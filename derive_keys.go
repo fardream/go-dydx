@@ -5,12 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"github.com/google/uuid"
 
 	"github.com/fardream/go-dydx/starkex"
 )
@@ -161,14 +161,10 @@ func RecoverDefaultApiKeyCredentials(signer SignTypedData, isMainnet bool) (*Api
 	key_bytes := hashed_s_bytes[:16]
 	passphrase_bytes := hashed_s_bytes[16:31]
 
-	key_hex := hex.EncodeToString(key_bytes)
-	key_uuid := strings.Join([]string{
-		key_hex[:8],
-		key_hex[8:12],
-		key_hex[12:16],
-		key_hex[16:20],
-		key_hex[20:],
-	}, "-")
+	key_uuid, err := uuid.FromBytes(key_bytes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot obtain UUID from bytes: %w", err)
+	}
 
-	return NewApiKey(key_uuid, base64.URLEncoding.EncodeToString(passphrase_bytes), base64.URLEncoding.EncodeToString(secret_bytes)), nil
+	return NewApiKey(key_uuid.String(), base64.URLEncoding.EncodeToString(passphrase_bytes), base64.URLEncoding.EncodeToString(secret_bytes)), nil
 }
