@@ -7,6 +7,8 @@ import (
 	"github.com/cockroachdb/apd/v3"
 )
 
+// Decimal is a type around github.com/cockroachdb/apd/v3's Decimal.
+// Added functionality to marshal from strings like 123 (instead of "123").
 type Decimal struct {
 	apd.Decimal
 }
