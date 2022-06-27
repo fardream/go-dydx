@@ -16,14 +16,14 @@ type sendCmd struct {
 	*cobra.Command
 	commonFields
 	duration
-	size       decimalValue
+	size       *dydx.Decimal
 	orderType  string
-	price      decimalValue
+	price      *dydx.Decimal
 	clientId   string
 	market     string
 	side       string
 	tif        string
-	limitfee   decimalValue
+	limitfee   *dydx.Decimal
 	postonly   bool
 	positionId int64
 	outputFile string
@@ -38,21 +38,24 @@ func newSendCmd() *sendCmd {
 		},
 		commonFields: commonFields{},
 		duration:     duration(time.Minute * 15),
+		size:         &dydx.Decimal{},
+		price:        &dydx.Decimal{},
+		limitfee:     &dydx.Decimal{},
 	}
 
 	c.setupCommonFields(c.Command)
 
 	c.Flags().VarP(&c.duration, "duration", "t", "order duration")
-	c.Flags().VarP(&c.size, "size", "s", "order size")
+	c.Flags().VarP(c.size, "size", "s", "order size")
 	c.MarkFlagRequired("size")
-	c.Flags().VarP(&c.price, "price", "p", "price for the order")
+	c.Flags().VarP(c.price, "price", "p", "price for the order")
 	c.MarkFlagRequired("price")
 	c.Flags().StringVar(&c.orderType, "order-type", "MARKET", "order type")
 	c.Flags().StringVar(&c.clientId, "client-id", "", "set an optional client order id. if unset, will be automatically generated")
 	c.Flags().StringVar(&c.market, "market", "m", "market for this order")
 	c.MarkFlagRequired("market")
 	c.limitfee.Set("0.125")
-	c.Flags().Var(&c.limitfee, "limit-fee", "limit fee for this order")
+	c.Flags().Var(c.limitfee, "limit-fee", "limit fee for this order")
 	c.Flags().StringVar(&c.side, "side", "", "side")
 	c.MarkFlagRequired("side")
 	c.Flags().StringVar(&c.tif, "tif", "GTT", "time-in-force")
@@ -83,11 +86,11 @@ func (c *sendCmd) do(*cobra.Command, []string) {
 		c.market,
 		getOrPanic(dydx.GetOrderSide(c.side)),
 		getOrPanic(dydx.GetOrderType(c.orderType)),
-		dydx.Decimal(c.size),
-		dydx.Decimal(c.price),
+		c.size,
+		c.price,
 		c.clientId, getOrPanic(dydx.GetTimeInForce(c.tif)),
 		now.Add((time.Duration)(c.duration)),
-		dydx.Decimal(c.limitfee),
+		c.limitfee,
 		c.postonly)
 
 	printOrPanic(order)

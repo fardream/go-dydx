@@ -9,9 +9,9 @@ import (
 
 // OrderbookOrder is an entry on the order book, it only contains price, quantity, and potentially an offset.
 type OrderbookOrder struct {
-	Price  Decimal `json:"price"`
-	Size   Decimal `json:"size"`
-	Offset *int64  `json:"offset,omitempty"`
+	Price  *Decimal `json:"price"`
+	Size   *Decimal `json:"size"`
+	Offset *int64   `json:"offset,omitempty"`
 
 	PriceString string `json:"-"`
 }
@@ -24,28 +24,34 @@ func (p *OrderbookOrder) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		mapper := make(map[string]Decimal)
 		if err1 := json.Unmarshal(data, &mapper); err1 != nil {
-			return fmt.Errorf("failed to parse the data: as []string: %#v, and as map[string]string: %#v", err, err1)
+			return fmt.Errorf("failed to parse the data: as []Decimal: %#v, and as map[string]string: %#v: %s", err, err1, string(data))
 		}
 		if v, ok := mapper["price"]; ok {
-			p.Price = v
+			p.Price = &v
 		}
 		if v, ok := mapper["size"]; ok {
-			p.Size = v
+			p.Size = &v
 		}
 		if v, ok := mapper["offset"]; ok {
-			k := v.IntPart()
+			k, err := v.Int64()
+			if err != nil {
+				return fmt.Errorf("offset is not an integer: %v", v)
+			}
 			p.Offset = &k
 		}
 	} else {
 		l := len(s)
 		switch l {
 		case 2:
-			p.Price = s[0]
-			p.Size = s[1]
+			p.Price = &s[0]
+			p.Size = &s[1]
 		case 3:
-			p.Price = s[0]
-			p.Size = s[1]
-			k := s[2].IntPart()
+			p.Price = &s[0]
+			p.Size = &s[1]
+			k, err := s[2].Int64()
+			if err != nil {
+				return fmt.Errorf("offset is not an integer: %v", s[2])
+			}
 			p.Offset = &k
 		}
 	}

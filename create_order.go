@@ -18,11 +18,11 @@ type CreateOrderRequest struct {
 	Market          string      `json:"market"`
 	Side            OrderSide   `json:"side"`
 	Type            OrderType   `json:"type"`
-	Size            Decimal     `json:"size"`
-	Price           Decimal     `json:"price,omitempty"`
+	Size            *Decimal    `json:"size"`
+	Price           *Decimal    `json:"price,omitempty"`
 	ClientId        string      `json:"clientId"`
 	TimeInForce     TimeInForce `json:"timeInForce"`
-	LimitFee        Decimal     `json:"limitFee"`
+	LimitFee        *Decimal    `json:"limitFee"`
 	CancelId        string      `json:"cancelId,omitempty"`
 	TriggerPrice    string      `json:"triggerPrice,omitempty"`
 	TrailingPercent string      `json:"trailingPercent,omitempty"`
@@ -34,7 +34,7 @@ type CreateOrderResponse struct {
 }
 
 // NewCreateOrderRequest
-func NewCreateOrderRequest(market string, side OrderSide, order_type OrderType, size Decimal, price Decimal, clientid string, tif TimeInForce, expiration time.Time, limitfee Decimal, postonly bool) *CreateOrderRequest {
+func NewCreateOrderRequest(market string, side OrderSide, order_type OrderType, size *Decimal, price *Decimal, clientid string, tif TimeInForce, expiration time.Time, limitfee *Decimal, postonly bool) *CreateOrderRequest {
 	return &CreateOrderRequest{
 		Expiration:  expiration,
 		Market:      market,

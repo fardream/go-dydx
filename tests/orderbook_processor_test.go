@@ -16,7 +16,7 @@ func TestOrderBookProcessor(t *testing.T) {
 	ob := dydx.NewOrderbookProcessor("BTC-USD", false)
 	var data []*dydx.OrderbookChannelResponse
 	if err := json.Unmarshal([]byte(orderbook_data), &data); err != nil {
-		t.Fatalf("failed to parse data")
+		t.Fatalf("failed to parse data: %v", err)
 	}
 	for _, a := range data {
 		ob.Process(a)

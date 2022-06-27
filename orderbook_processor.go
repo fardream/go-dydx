@@ -100,7 +100,7 @@ type singleSideOrderbook interface {
 	// allow heap operations on this type
 	heap.Interface[*OrderbookOrder]
 	getPriceLevelIndex(priceStr string) (int, *OrderbookOrder, bool)
-	updatePriceLevelSize(priceStr string, newSize Decimal)
+	updatePriceLevelSize(priceStr string, newSize *Decimal)
 }
 
 var (
@@ -114,7 +114,7 @@ type Bids struct {
 }
 
 func (b *Bids) Less(i, j int) bool {
-	return b.Orders[i].Price.GreaterThan(b.Orders[j].Price)
+	return b.Orders[i].Price.Cmp(&b.Orders[j].Price.Decimal) > 0
 }
 
 // Asks side of the book.
@@ -123,7 +123,7 @@ type Asks struct {
 }
 
 func (a *Asks) Less(i, j int) bool {
-	return a.Orders[i].Price.LessThan(a.Orders[j].Price)
+	return a.Orders[i].Price.Cmp(&a.Orders[j].Price.Decimal) < 0
 }
 
 // mappedBook contains all the supporting functions for singleSideOrderbook without the less function.
@@ -176,7 +176,7 @@ func (m *mappedBook) getPriceLevelIndex(priceStr string) (int, *OrderbookOrder, 
 	return r, m.Orders[r], true
 }
 
-func (m *mappedBook) updatePriceLevelSize(priceStr string, news_size Decimal) {
+func (m *mappedBook) updatePriceLevelSize(priceStr string, news_size *Decimal) {
 	r, ok := m.locations[priceStr]
 	if ok {
 		m.Orders[r].Size = news_size

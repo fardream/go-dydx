@@ -8,7 +8,6 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fardream/go-dydx"
-	"github.com/shopspring/decimal"
 )
 
 func getOrPanic[T any](input T, err error) T {
@@ -41,7 +40,7 @@ func ExampleClient_NewOrder() {
 	id.Add(id, big.NewInt(1000000))
 
 	// create a new order
-	order := dydx.NewCreateOrderRequest("BTC-USD", dydx.OrderSideSell, dydx.OrderTypeLimit, getOrPanic(decimal.NewFromString("0.001")), getOrPanic(decimal.NewFromString("35000")), id.String(), "", time.Now().Add(5*time.Minute), getOrPanic(decimal.NewFromString("0.125")), false)
+	order := dydx.NewCreateOrderRequest("BTC-USD", dydx.OrderSideSell, dydx.OrderTypeLimit, getOrPanic(dydx.NewDecimalFromString("0.001")), getOrPanic(dydx.NewDecimalFromString("35000")), id.String(), "", time.Now().Add(5*time.Minute), getOrPanic(dydx.NewDecimalFromString("0.125")), false)
 	// place the order
 	r := getOrPanic(client.NewOrder(context.Background(), order, 62681))
 	spew.Dump(r)
