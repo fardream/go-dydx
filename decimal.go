@@ -16,18 +16,12 @@ func NewDecimalFromString(s string) (*Decimal, error) {
 	return &Decimal{Decimal: *d}, err
 }
 
-func DecimalToString(d *Decimal) string {
-	return d.Decimal.String()
-}
-
 func (d *Decimal) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &d.Decimal)
 	if err != nil {
-		var v int64
-		if err1 := json.Unmarshal(data, &v); err1 != nil {
+		if _, _, err1 := d.Decimal.SetString(string(data)); err1 != nil {
 			return fmt.Errorf("failed to parse decimal %s - both as str %v or int %v", string(data), err, err1)
 		}
-		d.Decimal.SetInt64(v)
 	}
 
 	return nil
