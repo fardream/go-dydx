@@ -114,7 +114,7 @@ type Bids struct {
 }
 
 func (b *Bids) Less(i, j int) bool {
-	return b.Orders[i].Price.Cmp(&b.Orders[j].Price.Decimal) > 0
+	return b.Orders[i].Price.GreaterThan(b.Orders[j].Price)
 }
 
 // Asks side of the book.
@@ -123,7 +123,7 @@ type Asks struct {
 }
 
 func (a *Asks) Less(i, j int) bool {
-	return a.Orders[i].Price.Cmp(&a.Orders[j].Price.Decimal) < 0
+	return a.Orders[i].Price.LessThan(a.Orders[j].Price)
 }
 
 // mappedBook contains all the supporting functions for singleSideOrderbook without the less function.
