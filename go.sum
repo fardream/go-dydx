@@ -19,8 +19,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 h1:YLtO71vCjJRCBcrPMtQ9nqBsqpA1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1/go.mod h1:hyedUtir6IdtD/7lIxGeCxkaw7y45JueMRL4DIyJDKs=
 github.com/ethereum/go-ethereum v1.10.20 h1:75IW830ClSS40yrQC1ZCMZCt5I+zU16oqId2SiQwdQ4=
 github.com/ethereum/go-ethereum v1.10.20/go.mod h1:LWUN82TCHGpxB3En5HVmLLzPD7YSrEUFmFfN1nKkVN0=
-github.com/fardream/decimal v1.0.1 h1:Ys6QQwGPun0tEn431J+y69zlRqRo7TOt5ZQZ80GH0lc=
-github.com/fardream/decimal v1.0.1/go.mod h1:xSidlxgmhZYlS1dpAer0dP0EjDtACLDXHlL0pWupqws=
+github.com/fardream/decimal v1.0.2 h1:YTbnMN5x0cVaCvbjBmqe3TBtUZOqlZA+jQUY8uUtQr8=
+github.com/fardream/decimal v1.0.2/go.mod h1:xSidlxgmhZYlS1dpAer0dP0EjDtACLDXHlL0pWupqws=
 github.com/go-ole/go-ole v1.2.1 h1:2lOsA72HgjxAuMlKpFiCbHTvu44PIVkZ5hqm3RSdI/E=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
 github.com/golang/snappy v0.0.4 h1:yAGX7huGHXlcLOEtBnF4w7FQwA26wojNCwOYAEhLjQM=
