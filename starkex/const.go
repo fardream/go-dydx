@@ -3,7 +3,7 @@ package starkex
 import (
 	"math/big"
 
-	"github.com/shopspring/decimal"
+	"github.com/fardream/decimal"
 )
 
 const (
@@ -47,7 +47,7 @@ const (
 var (
 	mainNet, _     = big.NewInt(0).SetString(ASSET_ID_MAINNET, 0) // with prefix: 0x
 	ropstenNet, _  = big.NewInt(0).SetString(ASSET_ID_ROPSTEN, 0) // with prefix: 0x
-	resolutionUsdc = decimal.NewFromInt(ASSET_RESOLUTION[COLLATERAL_ASSET])
+	resolutionUsdc = decimal.New(ASSET_RESOLUTION[COLLATERAL_ASSET], 0)
 )
 
 var COLLATERAL_ASSET_ID_BY_NETWORK_ID = map[int]*big.Int{

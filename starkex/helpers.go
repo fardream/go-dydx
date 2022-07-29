@@ -14,8 +14,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/fardream/decimal"
 	"github.com/huandu/xstrings"
-	"github.com/shopspring/decimal"
 	"golang.org/x/crypto/sha3"
 )
 

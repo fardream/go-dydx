@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shopspring/decimal"
+	"github.com/fardream/decimal"
 )
 
 type OrderSigner struct {

@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/shopspring/decimal"
+	"github.com/fardream/decimal"
 )
 
 // Sign for withdraw
