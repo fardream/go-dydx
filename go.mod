@@ -12,7 +12,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/huandu/xstrings v1.3.2
 	github.com/spf13/cobra v1.5.0
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.22.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 )
 
