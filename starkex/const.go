@@ -8,7 +8,7 @@ import (
 
 const (
 	ORDER_PREFIX                = 3
-	CONDITIONAL_TRANSFER_PREFIX = 5
+	CONDITIONAL_TRANSFER_PREFIX = 4
 	WITHDRAWAL_PREFIX           = 6
 )
 

@@ -65,9 +65,9 @@ func (s *TransferSigner) getHash() (string, error) {
 	// net
 	net := COLLATERAL_ASSET_ID_BY_NETWORK_ID[s.param.NetworkId]
 	assetHash := getHash(net.String(), big.NewInt(CONDITIONAL_TRANSFER_FEE_ASSET_ID).String())
-	keyHash := getHash(assetHash, s.msg.ReceiverPublicKey.String())
 	// part 1
-	part1 := getHash(keyHash, s.msg.Condition.String())
+	part1 := getHash(assetHash, s.msg.ReceiverPublicKey.String())
+
 	// part 2
 	part2 := big.NewInt(0).Set(s.msg.SenderPositionId)
 	part2.Lsh(part2, CONDITIONAL_TRANSFER_FIELD_BIT_LENGTHS["position_id"])
@@ -76,6 +76,7 @@ func (s *TransferSigner) getHash() (string, error) {
 	part2.Add(part2, s.msg.SenderPositionId)
 	part2.Lsh(part2, CONDITIONAL_TRANSFER_FIELD_BIT_LENGTHS["nonce"])
 	part2.Add(part2, s.msg.Nonce)
+
 	// part 3
 	part3 := big.NewInt(CONDITIONAL_TRANSFER_PREFIX)
 	part3.Lsh(part3, CONDITIONAL_TRANSFER_FIELD_BIT_LENGTHS["quantums_amount"])
@@ -85,8 +86,10 @@ func (s *TransferSigner) getHash() (string, error) {
 	part3.Lsh(part3, CONDITIONAL_TRANSFER_FIELD_BIT_LENGTHS["expiration_epoch_hours"])
 	part3.Add(part3, s.msg.ExpirationEpochHours)
 	part3.Lsh(part3, CONDITIONAL_TRANSFER_PADDING_BITS)
+
 	// pedersen hash
 	hash1 := getHash(part1, part2.String())
 	hash2 := getHash(hash1, part3.String())
+
 	return hash2, nil
 }

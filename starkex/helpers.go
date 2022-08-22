@@ -74,7 +74,7 @@ func FactToCondition(factRegistryAddress string, fact string) *big.Int {
 	d.Write(hexBytes)
 	var hash Hash
 	r, ok := d.(io.Reader)
-	if !ok {
+	if ok {
 		r.Read(hash[:])
 	}
 	fst := hash.Big()
@@ -86,29 +86,30 @@ func FactToCondition(factRegistryAddress string, fact string) *big.Int {
 // tokenDecimals is COLLATERAL_TOKEN_DECIMALS
 // This is taken from the orignal code below:
 // ```
-// func GetTransferErc20FactOld(recipient string, tokenDecimals int, humanAmount, tokenAddress, salt string) (string, error) {
-// 	fmt.Println("GetTransferErc20Fact", recipient, tokenDecimals, humanAmount, tokenAddress, salt)
-// 	// token_amount = float(human_amount) * (10 ** token_decimals)
-// 	amount, err := decimal.NewFromString(humanAmount)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	saltInt, ok := big.NewInt(0).SetString(salt, 0) // with prefix: 0x
-// 	if !ok {
-// 		return "", fmt.Errorf("invalid salt: %v,can not parse to big.Int", salt)
-// 	}
-// 	tokenAmount := amount.Mul(decimal.New(10, int32(tokenDecimals-1)))
-// 	fact := solsha3.SoliditySHA3(
-// 		// types
-// 		[]string{"address", "uint256", "address", "uint256"},
-// 		// values
-// 		[]interface{}{recipient, tokenAmount.String(), tokenAddress, saltInt.String()},
-// 	)
-// 	return hex.EncodeToString(fact), nil
-// }
+//
+//	func GetTransferErc20FactOld(recipient string, tokenDecimals int, humanAmount, tokenAddress, salt string) (string, error) {
+//		fmt.Println("GetTransferErc20Fact", recipient, tokenDecimals, humanAmount, tokenAddress, salt)
+//		// token_amount = float(human_amount) * (10 ** token_decimals)
+//		amount, err := decimal.NewFromString(humanAmount)
+//		if err != nil {
+//			return "", err
+//		}
+//		saltInt, ok := big.NewInt(0).SetString(salt, 0) // with prefix: 0x
+//		if !ok {
+//			return "", fmt.Errorf("invalid salt: %v,can not parse to big.Int", salt)
+//		}
+//		tokenAmount := amount.Mul(decimal.New(10, int32(tokenDecimals-1)))
+//		fact := solsha3.SoliditySHA3(
+//			// types
+//			[]string{"address", "uint256", "address", "uint256"},
+//			// values
+//			[]interface{}{recipient, tokenAmount.String(), tokenAddress, saltInt.String()},
+//		)
+//		return hex.EncodeToString(fact), nil
+//	}
+//
 // ```
 func GetTransferErc20Fact(recipient string, tokenDecimals int, humanAmount, tokenAddress, salt string) (string, error) {
-	fmt.Println("GetTransferErc20Fact", recipient, tokenDecimals, humanAmount, tokenAddress, salt)
 	// token_amount = float(human_amount) * (10 ** token_decimals)
 	amount, err := decimal.NewFromString(humanAmount)
 	if err != nil {
