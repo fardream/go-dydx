@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/ethereum/go-ethereum v1.10.23
+	github.com/ethereum/go-ethereum v1.10.24
 	github.com/fardream/decimal v1.0.5
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-querystring v1.1.0
