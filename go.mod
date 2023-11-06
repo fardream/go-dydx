@@ -10,7 +10,7 @@ require (
 	github.com/google/go-querystring v1.1.0
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/websocket v1.5.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.14.0
 )
