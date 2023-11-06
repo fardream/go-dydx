@@ -8,7 +8,7 @@ require (
 	github.com/fardream/decimal v1.0.5
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-querystring v1.1.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/spf13/cobra v1.8.0
 	go.uber.org/zap v1.26.0
